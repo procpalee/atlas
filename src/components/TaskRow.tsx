@@ -288,7 +288,7 @@ function SubtaskRow({ item, root, projectId, workspaceId, onChange, hideProjectT
         data-navid={item.id}
         style={{ transform: CSS.Transform.toString(transform), transition }}
         {...attributes}
-        className={`group flex min-h-[44px] items-center gap-1 rounded-md px-2 py-1.5 hover:bg-zinc-100/80 md:min-h-[36px] dark:hover:bg-zinc-800/60 ${
+        className={`group flex min-h-[44px] items-center gap-2 rounded-md px-2 py-1.5 hover:bg-zinc-100/80 md:min-h-[36px] dark:hover:bg-zinc-800/60 ${
           selected ? 'bg-zinc-100/80 ring-2 ring-blue-500/50 ring-inset dark:bg-zinc-800/60' : ''
         } ${isDragging ? 'opacity-40' : ''}`}
         onPointerDown={e => e.stopPropagation()}
@@ -317,6 +317,8 @@ function SubtaskRow({ item, root, projectId, workspaceId, onChange, hideProjectT
         {!hideProjectTag && (projectId || workspaceId) && (
           <span className="shrink-0"><ProjectChip projectId={projectId} workspaceId={workspaceId} /></span>
         )}
+        {/* 부모 행의 중요(별) 아이콘 자리만큼 확보 — 프로젝트 태그 우측 정렬을 부모와 일치 */}
+        <span className="w-3.5 shrink-0" aria-hidden />
         <span className="flex w-5 shrink-0 justify-center">
           {hasChildren && <CollapseToggle collapsed={collapsed} selected={selected} onToggle={toggleCollapsed} />}
         </span>
