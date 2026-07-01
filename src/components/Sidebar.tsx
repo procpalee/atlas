@@ -1,5 +1,5 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { Inbox, Sun, CalendarClock, CalendarRange, CalendarDays, Plus, Pencil, Trash2, Settings, Moon, SunMedium, LayoutGrid, HelpCircle, X, Folder, FolderPlus, FolderMinus, Archive, ArchiveRestore, ChevronDown, ChevronRight, Columns2 } from 'lucide-react'
+import { Inbox, Sun, CalendarClock, CalendarRange, CalendarDays, Plus, Pencil, Trash2, Settings, Moon, SunMedium, LayoutGrid, HelpCircle, X, Folder, FolderPlus, FolderMinus, Archive, ArchiveRestore, ChevronDown, ChevronRight, Columns2, BarChart2 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useStore, selInbox, selToday, selOverdue, selDated, selWeek } from '../store/store'
 import { useSplit } from '../store/splitStore'
@@ -312,6 +312,10 @@ function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onTog
             Calendar
           </NavLink>
         </div>
+        <NavLink to="/review" className={navCls}>
+          <BarChart2 size={15.5} strokeWidth={1.9} />
+          Review
+        </NavLink>
       </nav>
 
       <div className="mt-5 mb-1 flex items-center justify-between px-4">

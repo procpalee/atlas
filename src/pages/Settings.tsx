@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Download, CalendarCheck2, Unplug, LogOut, RefreshCw, Tags, Pencil, Trash2 } from 'lucide-react'
+import { Download, CalendarCheck2, Unplug, LogOut, RefreshCw, Tags, Pencil, Trash2, Bell } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { gcalEnabled } from '../lib/gcal'
 import { useGcal } from '../store/gcalStore'
@@ -8,6 +8,7 @@ import { useAuth, REQUIRE_AUTH } from '../store/authStore'
 import { useStore, beginBatch, endBatch } from '../store/store'
 import { promptDialog, confirmDialog } from '../store/dialogStore'
 import TagChip from '../components/TagChip'
+import { getPermission, requestPermission, notifyEnabled, setNotifyEnabled, sendTestNotification, checkAndNotify } from '../lib/notify'
 
 export default function SettingsPage() {
   const [exporting, setExporting] = useState(false)
@@ -109,6 +110,8 @@ export default function SettingsPage() {
         )}
       </section>
 
+      <NotifySection />
+
       <TagManageSection />
 
       {REQUIRE_AUTH && session && (
@@ -125,6 +128,50 @@ export default function SettingsPage() {
         사용법·단축키·GTD 개념은 <Link to="/guide" className="text-blue-600 underline dark:text-blue-400">사용 설명서</Link>에서 확인하세요.
       </p>
     </div>
+  )
+}
+
+/** 알림 — 브라우저 Notification. 권한 상태별 UI + 토글 + 테스트 */
+function NotifySection() {
+  const [perm, setPerm] = useState(getPermission())
+  const [on, setOn] = useState(notifyEnabled())
+  const tasks = useStore(s => s.tasks)
+
+  const ask = async () => {
+    const p = await requestPermission()
+    setPerm(p)
+    if (p === 'granted') { setNotifyEnabled(true); setOn(true); void checkAndNotify(tasks) }
+  }
+  const toggle = (v: boolean) => { setNotifyEnabled(v); setOn(v); if (v) void checkAndNotify(tasks) }
+
+  return (
+    <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <h2 className="mb-1 flex items-center gap-1.5 text-[14.5px] font-bold"><Bell size={14} /> 알림</h2>
+      <p className="mb-3 text-[13.5px] text-zinc-400">
+        오늘 마감(지연 포함)·오늘 예정 태스크를 브라우저 알림으로 알려줍니다.
+        푸시 서버가 없어 <b>앱(설치된 PWA 포함)이 열려 있는 동안에만</b> 알림이 옵니다.
+      </p>
+      {perm === 'unsupported' && (
+        <p className="text-[13.5px] text-zinc-400">이 브라우저는 알림을 지원하지 않습니다. (iOS Safari는 홈 화면에 추가한 PWA에서만 지원)</p>
+      )}
+      {perm === 'default' && (
+        <button className="btn btn-primary" onClick={() => void ask()}>알림 권한 요청</button>
+      )}
+      {perm === 'denied' && (
+        <p className="text-[13.5px] text-amber-600 dark:text-amber-400">
+          브라우저에서 알림이 차단되어 있습니다 — 주소창 사이트 설정에서 알림을 허용한 뒤 새로고침하세요.
+        </p>
+      )}
+      {perm === 'granted' && (
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex cursor-pointer items-center gap-2 text-[13.5px]">
+            <input type="checkbox" className="h-3.5 w-3.5 accent-blue-600" checked={on} onChange={e => toggle(e.target.checked)} />
+            마감·오늘 일정 알림 켜기
+          </label>
+          <button className="btn" onClick={() => void sendTestNotification()}>테스트 알림</button>
+        </div>
+      )}
+    </section>
   )
 }
 

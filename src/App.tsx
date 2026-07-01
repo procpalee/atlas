@@ -19,8 +19,10 @@ import WorkspacePage from './pages/Workspace'
 import SettingsPage from './pages/Settings'
 import GuidePage from './pages/Guide'
 import WorkspaceListPage from './pages/WorkspaceList'
+import ReviewPage from './pages/Review'
 import Login from './components/Login'
 import { useStore, selOverdue } from './store/store'
+import { checkAndNotify } from './lib/notify'
 import { useAuth, REQUIRE_AUTH } from './store/authStore'
 import { useSplit, type RightView } from './store/splitStore'
 
@@ -55,6 +57,17 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [fetchAll])
 
+  // 마감·일정 알림 — 로드 후 1회 + 15분 주기 + 복귀 시 (토글·권한은 notify.ts에서 가드)
+  useEffect(() => {
+    if (!loaded) return
+    const check = () => void checkAndNotify(useStore.getState().tasks)
+    check()
+    const iv = setInterval(check, 15 * 60_000)
+    const onVis = () => { if (document.visibilityState === 'visible') check() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => { clearInterval(iv); document.removeEventListener('visibilitychange', onVis) }
+  }, [loaded])
+
   if (REQUIRE_AUTH && !authReady) {
     return <div className="flex h-full items-center justify-center text-[14px] text-zinc-400">불러오는 중…</div>
   }
@@ -82,6 +95,7 @@ export default function App() {
                   <Route path="/scheduled" element={<Navigate to="/upcoming" replace />} />
                   <Route path="/someday" element={<Navigate to="/inbox" replace />} />
                   <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/review" element={<ReviewPage />} />
                   <Route path="/workspaces" element={<WorkspaceListPage />} />
                   <Route path="/w/:wsId" element={<WorkspacePage />} />
                   <Route path="/w/:wsId/p/:projectId" element={<SubprojectRedirect />} />
@@ -213,7 +227,7 @@ function Flash() {
 
 const STATIC_TITLES: Record<string, string> = {
   '/': 'Today', '/inbox': 'Inbox', '/upcoming': 'Upcoming', '/someday': 'Someday',
-  '/calendar': 'Calendar', '/week': 'This Week', '/workspaces': '프로젝트', '/settings': '설정', '/guide': '설명서',
+  '/calendar': 'Calendar', '/week': 'This Week', '/review': 'Review', '/workspaces': '프로젝트', '/settings': '설정', '/guide': '설명서',
 }
 
 /** 구 서브프로젝트 URL(/w/:wsId/p/:projectId) → 프로젝트 뷰로 리다이렉트 */
