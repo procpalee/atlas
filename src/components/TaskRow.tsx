@@ -47,6 +47,9 @@ export default function TaskRow({
   const toggleDone = useStore(s => s.toggleDone)
   const updateTask = useStore(s => s.updateTask)
   const selected = useStore(s => s.hoverTaskId === task.id)
+  const multiSelected = useStore(s => s.selectedIds.includes(task.id))
+  const toggleSelected = useStore(s => s.toggleSelected)
+  const selectRangeTo = useStore(s => s.selectRangeTo)
   const addingSub = useStore(s => s.addSubFor === task.id)
   const setAddSubFor = useStore(s => s.setAddSubFor)
   const done = task.status === 'done'
@@ -67,8 +70,15 @@ export default function TaskRow({
         ref={ref}
         className={`group flex min-h-[44px] cursor-pointer flex-wrap items-center gap-x-2 gap-y-1 rounded-md border px-2 py-1.5 hover:bg-zinc-100/80 md:min-h-[36px] md:flex-nowrap dark:hover:bg-zinc-800/60 ${
           task.important && !done ? 'border-amber-400 dark:border-amber-500' : 'border-transparent'
-        } ${selected ? 'bg-zinc-100/80 ring-2 ring-blue-500/50 ring-inset dark:bg-zinc-800/60' : ''}`}
-        onClick={() => onOpen(task.id)}
+        } ${selected ? 'bg-zinc-100/80 ring-2 ring-blue-500/50 ring-inset dark:bg-zinc-800/60' : ''} ${
+          multiSelected ? 'bg-blue-50 dark:bg-blue-950/40' : ''
+        }`}
+        onMouseDown={e => { if (e.shiftKey) e.preventDefault() /* shift+클릭 시 텍스트 선택 방지 */ }}
+        onClick={e => {
+          if (e.ctrlKey || e.metaKey) { toggleSelected(task.id); return }
+          if (e.shiftKey) { selectRangeTo(task.id); return }
+          onOpen(task.id)
+        }}
         onContextMenu={onContextMenu}
       >
         <button

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Modal from './Modal'
-import { useStore } from '../store/store'
+import { useStore, beginBatch, endBatch } from '../store/store'
 import { todayStr } from '../lib/dates'
 
 /**
@@ -37,8 +37,10 @@ export const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: 'W / M', desc: '캘린더: 주간 / 월간 전환' },
   { keys: 'Alt + Shift + 1~9', desc: '워크스페이스 이동' },
   { keys: 'Ctrl K', desc: '빠른 캡처 (Inbox)' },
+  { keys: 'Ctrl F', desc: '전역 검색 (태스크·프로젝트·뷰)' },
   { keys: 'Ctrl Z', desc: '실행취소' },
   { keys: 'Ctrl Shift Z', desc: '다시 실행' },
+  { keys: 'Ctrl/Shift 클릭', desc: '멀티선택 — 하단 바에서 일괄 완료·일정·이동·삭제' },
   { keys: 'Tab / Shift Tab', desc: '서브태스크: 들여쓰기 / 내어쓰기' },
   { keys: '?', desc: '단축키 도움말' },
 ]
@@ -229,7 +231,22 @@ export default function Shortcuts() {
       }
       if (e.key === 'ArrowLeft' || e.key === 'Escape') {
         e.preventDefault()
+        if (e.key === 'Escape' && store.selectedIds.length) { store.clearSelected(); return } // 멀티선택 해제 먼저
         store.setHoverTask(null)
+        return
+      }
+
+      /* 멀티선택 일괄 (Space=완료 · Delete=삭제) — batch undo로 Ctrl+Z 한 번에 복원 */
+      if (store.selectedIds.length > 1 && (e.key === ' ' || e.code === 'Space' || e.key === 'Delete')) {
+        e.preventDefault()
+        const ids = store.selectedIds
+        beginBatch()
+        if (e.key === 'Delete') for (const id of ids) store.deleteTask(id)
+        else for (const id of ids) { const t = store.tasks.find(x => x.id === id); if (t && t.status !== 'done') store.toggleDone(id) }
+        endBatch(`${ids.length}개 ${e.key === 'Delete' ? '삭제' : '완료'}`)
+        store.clearSelected()
+        store.setHoverTask(null)
+        window.dispatchEvent(new CustomEvent('pd:flash', { detail: `${ids.length}개 ${e.key === 'Delete' ? '삭제' : '완료'} — Ctrl+Z로 복원` }))
         return
       }
 

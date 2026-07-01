@@ -8,6 +8,8 @@ import TaskDetail from './components/TaskDetail'
 import DialogHost from './components/DialogHost'
 import SyncBanner from './components/SyncBanner'
 import Skeleton from './components/Skeleton'
+import SearchPalette from './components/SearchPalette'
+import BulkBar from './components/BulkBar'
 import TodayPage from './pages/Today'
 import WeekPage from './pages/Week'
 import InboxPage from './pages/Inbox'
@@ -97,6 +99,8 @@ export default function App() {
       <Shortcuts />
       <Flash />
       <SyncBanner />
+      <SearchPalette />
+      <BulkBar />
       {/* 상세 — 중앙 팝업 */}
       {detailTaskId && <TaskDetail key={detailTaskId} taskId={detailTaskId} onClose={() => openDetail(null)} />}
       <DialogHost />

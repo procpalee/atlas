@@ -62,6 +62,12 @@ interface Store {
   /** 탭 화면에서 Esc로 사이드바에 포커스 — true면 ↑/↓가 사이드바(뷰) 이동 */
   sidebarFocus: boolean
   setSidebarFocus: (v: boolean) => void
+  /** 멀티선택 (Ctrl/Shift+클릭) — BulkBar 일괄 작업 대상 */
+  selectedIds: string[]
+  toggleSelected: (id: string) => void
+  /** 마지막 선택(없으면 hover)에서 id까지 navOrder 범위 선택 — 서브태스크 id는 제외 */
+  selectRangeTo: (id: string) => void
+  clearSelected: () => void
 
   fetchAll: () => Promise<void>
 
@@ -122,14 +128,24 @@ type UndoEntry =
   | { kind: 'update'; id: string; title: string; prev: Partial<Task> }
   | { kind: 'add'; id: string; title: string }
   | { kind: 'delete'; row: Task }
+  | { kind: 'batch'; label: string; entries: UndoEntry[] }
 const undoStack: UndoEntry[] = []
 const redoStack: UndoEntry[] = []
 let suppressUndo = false
+let batchBuf: UndoEntry[] | null = null
 function pushUndo(e: UndoEntry) {
   if (suppressUndo) return
+  if (batchBuf) { batchBuf.push(e); return } // 일괄 작업 중 — endBatch에서 묶어 push
   undoStack.push(e)
   if (undoStack.length > 50) undoStack.shift()
   redoStack.length = 0 // 새 사용자 액션 → 앞으로의(redo) 이력은 무효
+}
+/** 일괄 작업 undo 묶기 — beginBatch() 후의 태스크 변경들이 endBatch(label)에서 한 entry로 합쳐진다(Ctrl+Z 한 번에 복원). */
+export function beginBatch(): void { batchBuf = [] }
+export function endBatch(label: string): void {
+  const buf = batchBuf
+  batchBuf = null
+  if (buf && buf.length) pushUndo({ kind: 'batch', label, entries: buf })
 }
 
 /** undo/redo 공용: entry를 적용하고 역연산 entry를 반환.
@@ -137,6 +153,15 @@ function pushUndo(e: UndoEntry) {
 function applyHistoryEntry(e: UndoEntry, mode: 'undo' | 'redo'): { inverse: UndoEntry | null; msg: string } {
   const st = useStore.getState()
   const u = mode === 'undo'
+  if (e.kind === 'batch') {
+    // 역순으로 적용 — 수집된 inverse 배열도 적용 순서라, 다음에 다시 역순 적용되면 원래 순서로 돌아온다
+    const inverses: UndoEntry[] = []
+    for (const sub of [...e.entries].reverse()) {
+      const { inverse } = applyHistoryEntry(sub, mode)
+      if (inverse) inverses.push(inverse)
+    }
+    return { inverse: inverses.length ? { kind: 'batch', label: e.label, entries: inverses } : null, msg: `${e.label} ${u ? '취소' : '다시실행'}` }
+  }
   if (e.kind === 'update') {
     const cur = st.tasks.find(t => t.id === e.id)
     if (!cur) return { inverse: null, msg: `${u ? '취소' : '다시실행'} 불가 (태스크 없음): ${e.title}` }
@@ -182,6 +207,26 @@ export const useStore = create<Store>((set, get) => ({
   setTabNav: t => set({ tabNav: t }),
   sidebarFocus: false,
   setSidebarFocus: v => set({ sidebarFocus: v }),
+  selectedIds: [],
+  toggleSelected: id => set(s => ({
+    selectedIds: s.selectedIds.includes(id) ? s.selectedIds.filter(x => x !== id) : [...s.selectedIds, id],
+    hoverTaskId: id,
+    quickFocus: -1,
+  })),
+  selectRangeTo: id => {
+    const { selectedIds, navOrder, hoverTaskId, tasks } = get()
+    const anchor = selectedIds[selectedIds.length - 1] ?? hoverTaskId
+    const ai = anchor ? navOrder.indexOf(anchor) : -1
+    const bi = navOrder.indexOf(id)
+    if (ai === -1 || bi === -1) {
+      set({ selectedIds: [...new Set([...selectedIds, id])], hoverTaskId: id })
+      return
+    }
+    const [lo, hi] = ai < bi ? [ai, bi] : [bi, ai]
+    const range = navOrder.slice(lo, hi + 1).filter(x => tasks.some(t => t.id === x)) // 서브태스크 제외
+    set({ selectedIds: [...new Set([...selectedIds, ...range])], hoverTaskId: id })
+  },
+  clearSelected: () => set(s => (s.selectedIds.length ? { selectedIds: [] } : s)),
   moveHover: dir => {
     const { navOrder, hoverTaskId } = get()
     if (!navOrder.length) return
@@ -589,6 +634,7 @@ export function useNavOrder(ids: string[], kind: 'task' | 'project' = 'task'): v
     return () => {
       useStore.getState().setNavOrder([])
       useStore.getState().setHoverTask(null)
+      useStore.getState().clearSelected()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])

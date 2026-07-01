@@ -99,7 +99,7 @@ export default function TodayPage() {
     [overdue, todoOrder, todayTasks],
   ))
 
-  const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id))
+  const onDragStart = (e: DragStartEvent) => { setActiveId(String(e.active.id)); useStore.getState().clearSelected() }
 
   const onDragEnd = (e: DragEndEvent) => {
     setActiveId(null)

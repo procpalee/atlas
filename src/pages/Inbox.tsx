@@ -165,7 +165,7 @@ export default function InboxPage() {
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={e => setDragId(String(e.active.id))} onDragEnd={onDragEnd} onDragCancel={() => setDragId(null)}>
+    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={e => { setDragId(String(e.active.id)); useStore.getState().clearSelected() }} onDragEnd={onDragEnd} onDragCancel={() => setDragId(null)}>
       <div className="mx-auto flex max-w-[1240px] flex-col gap-5 px-5 py-5 lg:flex-row lg:items-start">
         {/* 왼쪽 — Inbox */}
         <DropColumn id="inbox" active={dragId != null} className="min-w-0 flex-1">
