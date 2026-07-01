@@ -102,8 +102,10 @@ export default function TaskRow({
           {trailing}
         </div>
 
-        {/* 서브태스크 접기/펼치기 — 항상 맨 오른쪽 */}
-        {ckTotal > 0 && <CollapseToggle collapsed={collapsed} selected={selected} onToggle={toggleCollapsed} />}
+        {/* 서브태스크 접기/펼치기 — 모든 행이 같은 폭을 확보해 칩 정렬 유지(서브태스크 유무와 무관) */}
+        <span className="flex w-5 shrink-0 justify-center">
+          {ckTotal > 0 && <CollapseToggle collapsed={collapsed} selected={selected} onToggle={toggleCollapsed} />}
+        </span>
       </div>
 
       {task.checklist.length > 0 && !collapsed && (
@@ -315,7 +317,9 @@ function SubtaskRow({ item, root, projectId, workspaceId, onChange, hideProjectT
         {!hideProjectTag && (projectId || workspaceId) && (
           <span className="shrink-0"><ProjectChip projectId={projectId} workspaceId={workspaceId} /></span>
         )}
-        {hasChildren && <CollapseToggle collapsed={collapsed} selected={selected} onToggle={toggleCollapsed} />}
+        <span className="flex w-5 shrink-0 justify-center">
+          {hasChildren && <CollapseToggle collapsed={collapsed} selected={selected} onToggle={toggleCollapsed} />}
+        </span>
       </div>
       {hasChildren && !collapsed && (
         <div className="ml-3 border-l-2 border-zinc-200 pl-2 dark:border-zinc-700">
