@@ -73,6 +73,10 @@ export default function InboxPage() {
   const [sdOpen, setSdOpen] = useState(() => localStorage.getItem('pd-inbox-someday') !== '0')
   const toggleSd = () => setSdOpen(o => { localStorage.setItem('pd-inbox-someday', o ? '0' : '1'); return !o })
   const sdVisible = sdOpen || dragId != null // 접혀 있어도 드래그 중엔 드롭존 노출
+  // 프로젝트 태스크 섹션 — Inbox는 단순 태스크 스크래치패드가 기본, 프로젝트 소속은 접이식(기본 접힘)
+  const [projOpen, setProjOpen] = useState(() => localStorage.getItem('pd-inbox-proj') === '1')
+  const toggleProj = () => setProjOpen(o => { localStorage.setItem('pd-inbox-proj', o ? '0' : '1'); return !o })
+  const projVisible = projOpen || dragId != null // 드래그 중엔 드롭 대상으로 펼침
 
   const parsed = parseQuick(text)
   const submit = () => {
@@ -99,10 +103,14 @@ export default function InboxPage() {
   const inboxIds = useMemo(() => [...noWs, ...groups.flatMap(g => g.tasks)].map(t => t.id), [noWs, groups])
   const somedayIds = useMemo(() => someday.map(t => t.id), [someday])
 
-  // 키보드 내비 순서 (화면 표시 순서 그대로 flat: Inbox → Someday) — Someday는 펼쳤을 때만
+  const simpleIds = useMemo(() => noWs.map(t => t.id), [noWs])
+  const projIds = useMemo(() => groups.flatMap(g => g.tasks).map(t => t.id), [groups])
+  const projCount = projIds.length
+
+  // 키보드 내비 순서 (화면 표시 순서 그대로 flat: 단순 → 프로젝트(펼침 시) → Someday(펼침 시))
   useNavOrder(useMemo(
-    () => [...inboxIds, ...(sdOpen ? somedayIds : [])],
-    [inboxIds, sdOpen, somedayIds],
+    () => [...simpleIds, ...(projOpen ? projIds : []), ...(sdOpen ? somedayIds : [])],
+    [simpleIds, projOpen, projIds, sdOpen, somedayIds],
   ))
 
   const sensors = useSensors(
@@ -172,7 +180,9 @@ export default function InboxPage() {
           <div className="min-w-0">
             <div className="mb-4 flex items-baseline gap-3 px-1">
               <h1 className="text-[19px] font-bold tracking-tight">Inbox</h1>
-              <span className="text-[13.5px] font-medium text-zinc-400">{inbox.length}건</span>
+              <span className="text-[13.5px] font-medium text-zinc-400">
+                {noWs.length}건{projCount > 0 && ` · 프로젝트 ${projCount}`}
+              </span>
             </div>
 
             {/* 빠른 입력 — 모바일에선 + 버튼(전역 캡처)으로 대체되므로 숨김 */}
@@ -198,24 +208,37 @@ export default function InboxPage() {
             </div>
 
             <SortableContext items={inboxIds} strategy={verticalListSortingStrategy}>
+              {/* 단순 태스크 — 프로젝트 없이 바로 적는 스크래치패드 (Inbox의 기본 영역) */}
               {noWs.length > 0 && (
                 <section className="mb-4">
-                  {groups.length > 0 && <GroupHead label="미분류" count={noWs.length} />}
                   {noWs.map(t => <SortableRow key={t.id} task={t} />)}
                 </section>
               )}
+              {noWs.length === 0 && (
+                <EmptyState icon={Plus} title="Inbox가 비었습니다 ✓" hint="생각나는 일을 위 입력칸이나 Ctrl+K로 바로 적어두세요" />
+              )}
 
-              {groups.map(({ ws, tasks }) => (
-                <section key={ws.id} className="mb-4">
-                  <GroupHead label={ws.name} count={tasks.length} />
-                  {tasks.map(t => <SortableRow key={t.id} task={t} />)}
+              {/* 프로젝트 태스크 — 프로젝트에 소속된 미배정(날짜 없음) 태스크. 접이식(기본 접힘) */}
+              {projCount > 0 && (
+                <section className="mt-5 border-t border-zinc-200 pt-2 dark:border-zinc-800">
+                  <button
+                    onClick={toggleProj}
+                    className="mb-1.5 flex w-full items-center gap-1.5 rounded px-1.5 py-0.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
+                  >
+                    {projVisible ? <ChevronDown size={14} className="text-zinc-400" /> : <ChevronRight size={14} className="text-zinc-400" />}
+                    <Folder size={13} className="text-zinc-400" />
+                    <span className="text-[14px] font-bold tracking-tight text-zinc-600 dark:text-zinc-300">프로젝트 태스크</span>
+                    <span className="text-[12.5px] font-semibold text-zinc-400">{projCount}</span>
+                  </button>
+                  {projVisible && groups.map(({ ws, tasks }) => (
+                    <section key={ws.id} className="mb-4">
+                      <GroupHead label={ws.name} count={tasks.length} />
+                      {tasks.map(t => <SortableRow key={t.id} task={t} />)}
+                    </section>
+                  ))}
                 </section>
-              ))}
+              )}
             </SortableContext>
-
-            {inbox.length === 0 && (
-              <EmptyState icon={Plus} title="Inbox가 비었습니다 ✓" hint="Ctrl+K로 어디서든 빠르게 캡처할 수 있어요" />
-            )}
 
             <DoneSection tasks={doneInbox} storageKey="pd-inbox-done" className="mt-4" />
           </div>

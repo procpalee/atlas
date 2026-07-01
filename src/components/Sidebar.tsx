@@ -215,7 +215,7 @@ export function SyncDot({ className = '' }: { className?: string }) {
 function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onToggleTheme: () => void; onClose?: () => void }) {
   const workspaces = useStore(s => s.workspaces)
   const folders = useStore(s => s.folders)
-  const inboxCount = useStore(s => selInbox(s).length)
+  const inboxCount = useStore(s => selInbox(s).filter(t => !t.workspace_id).length) // 단순(프로젝트 없는) 태스크만 — 프로젝트 태스크는 Inbox 접이식 섹션
   const todayCount = useStore(s => selToday(s).filter(t => t.status !== 'done').length)
   const overdueCount = useStore(s => selOverdue(s).length)
   const weekCount = useStore(s => selWeek(s).length)
