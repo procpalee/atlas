@@ -6,6 +6,7 @@ import { todayStr, toStr } from '../lib/dates'
 import { addDays } from 'date-fns'
 import { confirmDialog } from '../store/dialogStore'
 import Checklist from './Checklist'
+import NaturalDateInput from './NaturalDateInput'
 
 /** 태스크 상세 — 중앙 팝업(다른 태스크 클릭 시 교체) */
 export default function TaskDetail({ taskId, onClose }: { taskId: string; onClose: () => void }) {
@@ -166,6 +167,9 @@ export default function TaskDetail({ taskId, onClose }: { taskId: string; onClos
                 {task.scheduled_date && (
                   <button className="btn btn-ghost !px-1.5 !py-0.5 !text-[12px] text-red-500" onClick={() => updateTask(task.id, { scheduled_date: null })}>지움</button>
                 )}
+              </div>
+              <div className="mt-1">
+                <NaturalDateInput onDate={d => updateTask(task.id, { scheduled_date: d })} />
               </div>
             </label>
 

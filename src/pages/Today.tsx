@@ -5,7 +5,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { CalendarX2, RefreshCw, CalendarDays, Plus, Pencil, Trash2, ChevronUp, ChevronDown, ChevronRight, Folder } from 'lucide-react'
+import { CalendarX2, RefreshCw, CalendarDays, Plus, Pencil, Trash2, ChevronUp, ChevronDown, ChevronRight, Folder, Sun } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore, selToday, selOverdue, useNavOrder } from '../store/store'
 import { promptDialog, confirmDialog } from '../store/dialogStore'
@@ -15,6 +15,7 @@ import { between } from '../lib/position'
 import { fmtDate, todayStr, toStr, daysFromToday } from '../lib/dates'
 import { addDays } from 'date-fns'
 import TaskRow from '../components/TaskRow'
+import EmptyState from '../components/EmptyState'
 import { Link } from 'react-router-dom'
 
 const NONE = 'none'
@@ -266,9 +267,7 @@ export default function TodayPage() {
       </DndContext>
 
       {todayTasks.length === 0 && overdue.length === 0 && (
-        <div className="mt-3 rounded-lg border border-dashed border-zinc-300 p-10 text-center text-[14px] text-zinc-400 dark:border-zinc-700">
-          오늘 예정된 태스크가 없습니다
-        </div>
+        <EmptyState icon={Sun} title="오늘 예정된 태스크가 없습니다" hint="위 입력칸 또는 Ctrl+K로 추가하세요" className="mt-3" />
       )}
     </div>
   )

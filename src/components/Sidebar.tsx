@@ -158,10 +158,10 @@ function ArchiveSection({ archived, workspaces, folders }: { archived: Workspace
   )
 }
 
-function CountBadge({ n }: { n: number }) {
+function CountBadge({ n, className = 'ml-auto' }: { n: number; className?: string }) {
   if (!n) return null
   return (
-    <span className="ml-auto rounded-full bg-zinc-200 px-1.5 py-px text-[12px] font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+    <span className={`${className} rounded-full bg-zinc-200 px-1.5 py-px text-[12px] font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400`}>
       {n}
     </span>
   )
@@ -216,7 +216,8 @@ function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onTog
   const workspaces = useStore(s => s.workspaces)
   const folders = useStore(s => s.folders)
   const inboxCount = useStore(s => selInbox(s).length)
-  const todayCount = useStore(s => selOverdue(s).length + selToday(s).filter(t => t.status !== 'done').length)
+  const todayCount = useStore(s => selToday(s).filter(t => t.status !== 'done').length)
+  const overdueCount = useStore(s => selOverdue(s).length)
   const weekCount = useStore(s => selWeek(s).length)
   const upcomingCount = useStore(s => selDated(s).length)
   const addWorkspace = useStore(s => s.addWorkspace)
@@ -284,7 +285,12 @@ function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onTog
         <NavLink to="/" end className={navCls}>
           <Sun size={15.5} strokeWidth={1.9} />
           Today
-          <CountBadge n={todayCount} />
+          {overdueCount > 0 && (
+            <span title={`지연 ${overdueCount}건`} className="ml-auto rounded-full bg-red-500 px-1.5 py-px text-[11.5px] font-semibold text-white">
+              {overdueCount}
+            </span>
+          )}
+          <CountBadge n={todayCount} className={overdueCount > 0 ? '' : 'ml-auto'} />
         </NavLink>
         {/* 이번주(주간 보드) — 데스크탑 전용(모바일 드로어/하단탭엔 숨김) */}
         <div className="hidden md:contents">

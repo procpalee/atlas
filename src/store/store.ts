@@ -101,6 +101,8 @@ interface Store {
   toggleDone: (id: string) => void
   /** 마지막 태스크 변경 취소. 취소한 작업 설명 또는 null */
   undo: () => string | null
+  /** 마지막 실행취소를 다시 실행 (Ctrl+Shift+Z). 설명 또는 null */
+  redo: () => string | null
   /** 칸반/Today 리스트 리밸런스: ids 순서대로 position 컬럼 재배치 */
   rebalance: (ids: string[], field: 'position' | 'today_position') => void
   /** 서브태스크(체크리스트 항목) 완료 토글 — 소속 태스크를 찾아 적용 (키보드 Space) */
@@ -115,17 +117,45 @@ function maxPos(list: { position: number }[]): number {
   return list.length ? Math.max(...list.map(x => x.position)) : 0
 }
 
-/* ───── Undo (태스크 변경 한정, Ctrl+Z) ───── */
+/* ───── Undo/Redo (태스크 변경 한정, Ctrl+Z / Ctrl+Shift+Z) ───── */
 type UndoEntry =
   | { kind: 'update'; id: string; title: string; prev: Partial<Task> }
   | { kind: 'add'; id: string; title: string }
   | { kind: 'delete'; row: Task }
 const undoStack: UndoEntry[] = []
+const redoStack: UndoEntry[] = []
 let suppressUndo = false
 function pushUndo(e: UndoEntry) {
   if (suppressUndo) return
   undoStack.push(e)
   if (undoStack.length > 50) undoStack.shift()
+  redoStack.length = 0 // 새 사용자 액션 → 앞으로의(redo) 이력은 무효
+}
+
+/** undo/redo 공용: entry를 적용하고 역연산 entry를 반환.
+ *  entry 해석은 동일(update=값 복원 · add=삭제 · delete=복원) — undo와 redo가 서로의 역연산을 주고받는다. */
+function applyHistoryEntry(e: UndoEntry, mode: 'undo' | 'redo'): { inverse: UndoEntry | null; msg: string } {
+  const st = useStore.getState()
+  const u = mode === 'undo'
+  if (e.kind === 'update') {
+    const cur = st.tasks.find(t => t.id === e.id)
+    if (!cur) return { inverse: null, msg: `${u ? '취소' : '다시실행'} 불가 (태스크 없음): ${e.title}` }
+    const now: Partial<Task> = {}
+    for (const k of Object.keys(e.prev) as (keyof Task)[]) (now as Record<string, unknown>)[k] = cur[k]
+    st.updateTask(e.id, e.prev)
+    return { inverse: { kind: 'update', id: e.id, title: e.title, prev: now }, msg: `수정 ${u ? '취소' : '다시실행'}: ${e.title}` }
+  }
+  if (e.kind === 'add') {
+    // 적용 = 삭제. undo에선 '추가 취소', redo에선 '삭제 다시실행'
+    const row = st.tasks.find(t => t.id === e.id)
+    st.deleteTask(e.id)
+    return { inverse: row ? { kind: 'delete', row } : null, msg: `${u ? '추가 취소' : '삭제 다시실행'}: ${e.title}` }
+  }
+  // 적용 = 복원. undo에선 '삭제 복원', redo에선 '추가 다시실행'
+  const { updated_at: _u, ...payload } = e.row
+  useStore.setState(s => ({ tasks: [...s.tasks, e.row] }))
+  enqueue({ table: 'tasks', kind: 'upsert', rowId: e.row.id, payload })
+  return { inverse: { kind: 'add', id: e.row.id, title: e.row.title }, msg: `${u ? '삭제 복원' : '추가 다시실행'}: ${e.row.title}` }
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -396,19 +426,22 @@ export const useStore = create<Store>((set, get) => ({
     if (!e) return null
     suppressUndo = true
     try {
-      if (e.kind === 'update') {
-        get().updateTask(e.id, e.prev)
-        return `수정 취소: ${e.title}`
-      }
-      if (e.kind === 'add') {
-        get().deleteTask(e.id)
-        return `추가 취소: ${e.title}`
-      }
-      // delete 복원
-      const { updated_at: _u, ...payload } = e.row
-      set(s => ({ tasks: [...s.tasks, e.row] }))
-      enqueue({ table: 'tasks', kind: 'upsert', rowId: e.row.id, payload })
-      return `삭제 복원: ${e.row.title}`
+      const { inverse, msg } = applyHistoryEntry(e, 'undo')
+      if (inverse) redoStack.push(inverse)
+      return msg
+    } finally {
+      suppressUndo = false
+    }
+  },
+
+  redo: () => {
+    const e = redoStack.pop()
+    if (!e) return null
+    suppressUndo = true
+    try {
+      const { inverse, msg } = applyHistoryEntry(e, 'redo')
+      if (inverse) undoStack.push(inverse) // pushUndo 금지 — redoStack이 비워진다
+      return msg
     } finally {
       suppressUndo = false
     }

@@ -6,6 +6,8 @@ import QuickCapture from './components/QuickCapture'
 import Shortcuts from './components/Shortcuts'
 import TaskDetail from './components/TaskDetail'
 import DialogHost from './components/DialogHost'
+import SyncBanner from './components/SyncBanner'
+import Skeleton from './components/Skeleton'
 import TodayPage from './pages/Today'
 import WeekPage from './pages/Week'
 import InboxPage from './pages/Inbox'
@@ -16,7 +18,7 @@ import SettingsPage from './pages/Settings'
 import GuidePage from './pages/Guide'
 import WorkspaceListPage from './pages/WorkspaceList'
 import Login from './components/Login'
-import { useStore } from './store/store'
+import { useStore, selOverdue } from './store/store'
 import { useAuth, REQUIRE_AUTH } from './store/authStore'
 import { useSplit, type RightView } from './store/splitStore'
 
@@ -66,9 +68,9 @@ export default function App() {
         <Sidebar dark={dark} onToggleTheme={toggle} />
         <main className="min-w-0 flex-1 overflow-hidden pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
           {!loaded ? (
-            <div className="flex h-full items-center justify-center text-[14px] text-zinc-400">불러오는 중…</div>
+            <Skeleton />
           ) : (
-            <Suspense fallback={<div className="flex h-full items-center justify-center text-[14px] text-zinc-400">불러오는 중…</div>}>
+            <Suspense fallback={<Skeleton />}>
               <SplitLayout>
                 <Routes>
                   <Route path="/" element={<TodayPage />} />
@@ -94,6 +96,7 @@ export default function App() {
       <QuickCapture />
       <Shortcuts />
       <Flash />
+      <SyncBanner />
       {/* 상세 — 중앙 팝업 */}
       {detailTaskId && <TaskDetail key={detailTaskId} taskId={detailTaskId} onClose={() => openDetail(null)} />}
       <DialogHost />
@@ -261,6 +264,7 @@ function CaptureFab() {
 }
 
 function MobileNav() {
+  const overdueCount = useStore(s => selOverdue(s).length)
   const cls = ({ isActive }: { isActive: boolean }) =>
     `flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${
       isActive ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400'
@@ -268,7 +272,17 @@ function MobileNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-zinc-800 dark:bg-zinc-950/95">
       <NavLink to="/inbox" className={cls}><Inbox size={18} />Inbox</NavLink>
-      <NavLink to="/" end className={cls}><Sun size={18} />Today</NavLink>
+      <NavLink to="/" end className={cls}>
+        <span className="relative">
+          <Sun size={18} />
+          {overdueCount > 0 && (
+            <span className="absolute -top-1 -right-2.5 rounded-full bg-red-500 px-1 py-px text-[9.5px] font-semibold leading-tight text-white">
+              {overdueCount}
+            </span>
+          )}
+        </span>
+        Today
+      </NavLink>
       <NavLink to="/upcoming" className={cls}><CalendarClock size={18} />Upcoming</NavLink>
       <NavLink to="/settings" className={cls}><SettingsIcon size={18} />설정</NavLink>
     </nav>

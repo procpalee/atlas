@@ -3,6 +3,7 @@ import { Sun, CalendarDays, CalendarClock, CalendarRange, Moon, CircleSlash, Fla
 import { addDays } from 'date-fns'
 import { useStore } from '../store/store'
 import { todayStr, toStr, fmtDateShort, thisWeekEnd, nextWeekStart } from '../lib/dates'
+import NaturalDateInput from './NaturalDateInput'
 import type { Task } from '../types'
 
 /** Akiflow식 빠른 일정 팝업 — 오늘·내일·이번주·다음주·Someday·날짜없음 + 직접선택 + 마감일.
@@ -31,6 +32,9 @@ export default function PlanPopover({ task, onClose, align = 'right' }: { task: 
     <>
       <div className="fixed inset-0 z-40" onMouseDown={onClose} />
       <div className={`absolute top-7 z-50 w-[208px] max-w-[calc(100vw-1.5rem)] rounded-lg border border-zinc-200 bg-white p-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-900 ${align === 'right' ? 'right-0' : 'left-0'}`}>
+        <div className="p-1 pb-1.5">
+          <NaturalDateInput onDate={d => apply({ scheduled_date: d, someday: false })} />
+        </div>
         {opts.map(o => (
           <button
             key={o.label}

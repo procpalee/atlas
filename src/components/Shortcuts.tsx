@@ -38,6 +38,7 @@ export const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: 'Alt + Shift + 1~9', desc: '워크스페이스 이동' },
   { keys: 'Ctrl K', desc: '빠른 캡처 (Inbox)' },
   { keys: 'Ctrl Z', desc: '실행취소' },
+  { keys: 'Ctrl Shift Z', desc: '다시 실행' },
   { keys: 'Tab / Shift Tab', desc: '서브태스크: 들여쓰기 / 내어쓰기' },
   { keys: '?', desc: '단축키 도움말' },
 ]
@@ -65,6 +66,13 @@ export default function Shortcuts() {
         e.preventDefault()
         const msg = store.undo()
         window.dispatchEvent(new CustomEvent('pd:flash', { detail: msg ?? '되돌릴 작업이 없습니다' }))
+        return
+      }
+      // Ctrl+Shift+Z: 다시 실행
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z' && !isTyping(e)) {
+        e.preventDefault()
+        const msg = store.redo()
+        window.dispatchEvent(new CustomEvent('pd:flash', { detail: msg ?? '다시 실행할 작업이 없습니다' }))
         return
       }
       // Alt+Shift+1~9: 워크스페이스

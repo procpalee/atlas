@@ -8,11 +8,13 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useStore, selInbox, selSomeday, useNavOrder } from '../store/store'
+import { useStore, selInbox, selSomeday, useNavOrder, visibleDone } from '../store/store'
 import { parseQuick, daysFromToday, fmtDateShort } from '../lib/dates'
 import { between } from '../lib/position'
 import type { Task } from '../types'
 import TaskRow from '../components/TaskRow'
+import DoneSection from '../components/DoneSection'
+import EmptyState from '../components/EmptyState'
 
 const NONE = '__none' // 미분류(워크스페이스 없음) 그룹 키
 const wsKey = (t: Task) => t.workspace_id ?? NONE
@@ -58,6 +60,10 @@ function DropColumn({ id, active, className, children }: { id: 'inbox' | 'someda
 export default function InboxPage() {
   const inbox = useStore(useShallow(selInbox))
   const someday = useStore(useShallow(selSomeday))
+  const doneInbox = useStore(useShallow((s: Parameters<typeof selInbox>[0]) =>
+    s.tasks.filter(t => t.status === 'done' && !t.scheduled_date && !t.someday && visibleDone(t))
+      .sort((a, b) => (b.completed_at ?? '').localeCompare(a.completed_at ?? '')),
+  ))
   const workspaces = useStore(s => s.workspaces)
   const addTask = useStore(s => s.addTask)
   const updateTask = useStore(s => s.updateTask)
@@ -208,10 +214,10 @@ export default function InboxPage() {
             </SortableContext>
 
             {inbox.length === 0 && (
-              <div className="rounded-lg border border-dashed border-zinc-300 p-10 text-center text-[14px] text-zinc-400 dark:border-zinc-700">
-                Inbox가 비었습니다 ✓
-              </div>
+              <EmptyState icon={Plus} title="Inbox가 비었습니다 ✓" hint="Ctrl+K로 어디서든 빠르게 캡처할 수 있어요" />
             )}
+
+            <DoneSection tasks={doneInbox} storageKey="pd-inbox-done" className="mt-4" />
           </div>
         </DropColumn>
 

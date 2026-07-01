@@ -1,11 +1,13 @@
 import { useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { useStore, selDated, useNavOrder } from '../store/store'
+import { useStore, selDated, useNavOrder, visibleDone } from '../store/store'
 import { useGcal } from '../store/gcalStore'
 import { todayStr, toStr, fmtDateShort, thisWeekEnd, nextWeekStart, nextWeekEnd } from '../lib/dates'
 import { addDays } from 'date-fns'
 import TaskRow from '../components/TaskRow'
-import { AlarmClockOff, CalendarDays } from 'lucide-react'
+import DoneSection from '../components/DoneSection'
+import EmptyState from '../components/EmptyState'
+import { AlarmClockOff, CalendarClock, CalendarDays } from 'lucide-react'
 import type { Task } from '../types'
 import type { GcalEvent } from '../lib/gcal'
 
@@ -33,6 +35,10 @@ function bucketOfDate(date: string, today: string, tomorrow: string, twEnd: stri
 
 export default function UpcomingPage() {
   const dated = useStore(useShallow(selDated))
+  const doneDated = useStore(useShallow((s: Parameters<typeof selDated>[0]) =>
+    s.tasks.filter(t => t.status === 'done' && t.scheduled_date && visibleDone(t))
+      .sort((a, b) => (b.completed_at ?? '').localeCompare(a.completed_at ?? '')),
+  ))
   const updateTask = useStore(s => s.updateTask)
   const openDetail = useStore(s => s.openDetail)
   const gcal = useGcal()
@@ -113,10 +119,10 @@ export default function UpcomingPage() {
       })}
 
       {dated.length === 0 && (
-        <div className="rounded-lg border border-dashed border-zinc-300 p-10 text-center text-[14px] text-zinc-400 dark:border-zinc-700">
-          예정된 태스크가 없습니다
-        </div>
+        <EmptyState icon={CalendarClock} title="예정된 태스크가 없습니다" hint="태스크에 실행일을 지정하면 여기에 나타납니다" />
       )}
+
+      <DoneSection tasks={doneDated} storageKey="pd-upcoming-done" className="mt-6" />
     </div>
   )
 }
