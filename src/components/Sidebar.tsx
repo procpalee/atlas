@@ -346,7 +346,7 @@ function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onTog
         </NavLink>
         <button
           onClick={toggleSplit}
-          className={`ml-auto rounded-md p-1.5 ${splitOn ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100'}`}
+          className={`rounded-md p-1.5 ${splitOn ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100'}`}
           title="화면 좌우 분할"
         >
           <Columns2 size={15.5} />
