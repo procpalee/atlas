@@ -35,6 +35,8 @@ export default function WeekBoard() {
   const gcal = useGcal()
   const [weekOffset, setWeekOffset] = useState(0)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [showDone, setShowDone] = useState(() => localStorage.getItem('pd-week-done') === '1')
+  const toggleShowDone = () => setShowDone(v => { localStorage.setItem('pd-week-done', v ? '0' : '1'); return !v })
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -88,6 +90,19 @@ export default function WeekBoard() {
     map[BACKLOG] = [...overdue, ...inbox]
     return { cols: map, overdueIds: new Set(overdue.map(t => t.id)) }
   }, [tasks, days, sortedSections, secIds, weekStart, weekEnd])
+
+  // 완료된 태스크 — 요일별(주간 범위). '완료 표시'가 켜졌을 때만 채움.
+  const doneByDay = useMemo(() => {
+    const map: Record<string, Task[]> = {}
+    for (const d of days) map[d.key] = []
+    if (!showDone) return map
+    for (const t of tasks) {
+      if (t.status !== 'done' || !t.scheduled_date) continue
+      if (t.scheduled_date >= weekStart && t.scheduled_date <= weekEnd) map[t.scheduled_date]?.push(t)
+    }
+    for (const k of Object.keys(map)) map[k].sort((a, b) => (a.completed_at ?? '').localeCompare(b.completed_at ?? ''))
+    return map
+  }, [tasks, days, weekStart, weekEnd, showDone])
 
   useNavOrder(useMemo(() => {
     const ids = [...cols[BACKLOG].map(t => t.id)]
@@ -165,6 +180,11 @@ export default function WeekBoard() {
         <h1 className="text-[19px] font-bold tracking-tight">This Week</h1>
         <span className="text-[15px] font-medium text-zinc-400">{rangeLabel}</span>
         <div className="ml-auto flex items-center gap-1">
+          <button
+            className={`mr-1 rounded-md px-2 py-1 text-[13px] font-semibold ${showDone ? 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100' : 'text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}
+            onClick={toggleShowDone}
+            title="완료된 태스크 표시/숨김"
+          >완료 표시</button>
           <button className="rounded-md p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800" onClick={() => setWeekOffset(o => o - 1)} title="이전 주"><ChevronLeft size={16} /></button>
           <button className={`rounded-md px-2 py-1 text-[14px] font-semibold ${weekOffset === 0 ? 'text-zinc-300 dark:text-zinc-600' : 'text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950'}`} onClick={() => setWeekOffset(0)} disabled={weekOffset === 0}>이번주</button>
           <button className="rounded-md p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800" onClick={() => setWeekOffset(o => o + 1)} title="다음 주"><ChevronRight size={16} /></button>
@@ -178,14 +198,14 @@ export default function WeekBoard() {
             {days.slice(0, 5).map(d => (
               <DayColumn key={d.key} date={d.key} label={d.label} short={d.short}
                 isToday={d.key === today} isPast={d.key < today}
-                sections={sortedSections} cols={cols} events={gcal.eventsOn(d.key)}
+                sections={sortedSections} cols={cols} done={doneByDay[d.key] ?? []} events={gcal.eventsOn(d.key)}
                 onOpen={openDetail} onAdd={title => addTask({ title, scheduled_date: d.key })} />
             ))}
             <div className="grid min-h-0 grid-rows-2 gap-3">
               {days.slice(5).map(d => (
                 <DayColumn key={d.key} date={d.key} label={d.label} short={d.short}
                   isToday={d.key === today} isPast={d.key < today}
-                  sections={sortedSections} cols={cols} events={gcal.eventsOn(d.key)}
+                  sections={sortedSections} cols={cols} done={doneByDay[d.key] ?? []} events={gcal.eventsOn(d.key)}
                   onOpen={openDetail} onAdd={title => addTask({ title, scheduled_date: d.key })} />
               ))}
             </div>
@@ -218,10 +238,11 @@ function BacklogColumn({ tasks, overdueIds, onOpen }: { tasks: Task[]; overdueId
   )
 }
 
-function DayColumn({ date, label, short, isToday, isPast, sections, cols, events, onOpen, onAdd }: {
+function DayColumn({ date, label, short, isToday, isPast, sections, cols, done, events, onOpen, onAdd }: {
   date: string; label: string; short: string; isToday: boolean; isPast: boolean
   sections: { id: string; name: string }[]
   cols: Record<string, Task[]>
+  done: Task[]
   events: GcalEvent[]
   onOpen: (id: string) => void; onAdd: (title: string) => void
 }) {
@@ -263,6 +284,16 @@ function DayColumn({ date, label, short, isToday, isPast, sections, cols, events
         {sections.map(s => (
           <SectionZone key={s.id} date={date} secId={s.id} label={s.name} tasks={cols[dsKey(date, s.id)] ?? []} onOpen={onOpen} />
         ))}
+        {done.length > 0 && (
+          <div className="mt-1 flex flex-col gap-1 border-t border-zinc-200 pt-1.5 dark:border-zinc-800">
+            <div className="px-1 text-[11.5px] font-semibold text-zinc-400">완료 {done.length}</div>
+            {done.map(t => (
+              <div key={t.id} className="cursor-pointer" onClick={() => onOpen(t.id)}>
+                <CardBody task={t} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
