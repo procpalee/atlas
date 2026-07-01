@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
-import { Inbox, Sun, CalendarClock, Settings as SettingsIcon, Plus, Menu, Moon, SunMedium } from 'lucide-react'
+import { Inbox, Sun, CalendarClock, Settings as SettingsIcon, Plus, Menu, Moon, SunMedium, X } from 'lucide-react'
 import Sidebar, { useTheme, MobileDrawer, SyncDot } from './components/Sidebar'
 import QuickCapture from './components/QuickCapture'
 import Shortcuts from './components/Shortcuts'
@@ -18,6 +18,7 @@ import WorkspaceListPage from './pages/WorkspaceList'
 import Login from './components/Login'
 import { useStore } from './store/store'
 import { useAuth, REQUIRE_AUTH } from './store/authStore'
+import { useSplit, type RightView } from './store/splitStore'
 
 export default function App() {
   const { dark, toggle } = useTheme()
@@ -63,25 +64,27 @@ export default function App() {
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} dark={dark} onToggleTheme={toggle} />
       <div className="flex h-full">
         <Sidebar dark={dark} onToggleTheme={toggle} />
-        <main className="min-w-0 flex-1 overflow-y-auto pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
+        <main className="min-w-0 flex-1 overflow-hidden pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
           {!loaded ? (
             <div className="flex h-full items-center justify-center text-[14px] text-zinc-400">불러오는 중…</div>
           ) : (
             <Suspense fallback={<div className="flex h-full items-center justify-center text-[14px] text-zinc-400">불러오는 중…</div>}>
-              <Routes>
-                <Route path="/" element={<TodayPage />} />
-                <Route path="/inbox" element={<InboxPage />} />
-                <Route path="/upcoming" element={<UpcomingPage />} />
-                <Route path="/week" element={<WeekPage />} />
-                <Route path="/scheduled" element={<Navigate to="/upcoming" replace />} />
-                <Route path="/someday" element={<Navigate to="/inbox" replace />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/workspaces" element={<WorkspaceListPage />} />
-                <Route path="/w/:wsId" element={<WorkspacePage />} />
-                <Route path="/w/:wsId/p/:projectId" element={<SubprojectRedirect />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/guide" element={<GuidePage />} />
-              </Routes>
+              <SplitLayout>
+                <Routes>
+                  <Route path="/" element={<TodayPage />} />
+                  <Route path="/inbox" element={<InboxPage />} />
+                  <Route path="/upcoming" element={<UpcomingPage />} />
+                  <Route path="/week" element={<WeekPage />} />
+                  <Route path="/scheduled" element={<Navigate to="/upcoming" replace />} />
+                  <Route path="/someday" element={<Navigate to="/inbox" replace />} />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/workspaces" element={<WorkspaceListPage />} />
+                  <Route path="/w/:wsId" element={<WorkspacePage />} />
+                  <Route path="/w/:wsId/p/:projectId" element={<SubprojectRedirect />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/guide" element={<GuidePage />} />
+                </Routes>
+              </SplitLayout>
             </Suspense>
           )}
         </main>
@@ -95,6 +98,88 @@ export default function App() {
       {detailTaskId && <TaskDetail key={detailTaskId} taskId={detailTaskId} onClose={() => openDetail(null)} />}
       <DialogHost />
     </BrowserRouter>
+  )
+}
+
+const RIGHT_VIEWS: Record<RightView, { label: string; comp: React.ComponentType }> = {
+  today: { label: 'Today', comp: TodayPage },
+  inbox: { label: 'Inbox', comp: InboxPage },
+  upcoming: { label: 'Upcoming', comp: UpcomingPage },
+  week: { label: 'This Week', comp: WeekPage },
+  calendar: { label: 'Calendar', comp: CalendarPage },
+}
+
+/** md 이상(데스크탑) 여부 — 분할은 데스크탑에서만 */
+function useIsDesktop() {
+  const [d, setD] = useState(() => window.matchMedia('(min-width: 768px)').matches)
+  useEffect(() => {
+    const m = window.matchMedia('(min-width: 768px)')
+    const h = () => setD(m.matches)
+    m.addEventListener('change', h)
+    return () => m.removeEventListener('change', h)
+  }, [])
+  return d
+}
+
+/** 메인 영역을 좌/우 2분할. 왼쪽=현재 라우트, 오른쪽=선택한 뷰. 경계 드래그로 폭 조절. */
+function SplitLayout({ children }: { children: React.ReactNode }) {
+  const on = useSplit(s => s.on)
+  const rightView = useSplit(s => s.rightView)
+  const ratio = useSplit(s => s.ratio)
+  const setRatio = useSplit(s => s.setRatio)
+  const setRightView = useSplit(s => s.setRightView)
+  const toggle = useSplit(s => s.toggle)
+  const isDesktop = useIsDesktop()
+  const ref = useRef<HTMLDivElement>(null)
+
+  if (!on || !isDesktop) return <div className="h-full overflow-y-auto">{children}</div>
+
+  const RightComp = RIGHT_VIEWS[rightView].comp
+  const startDrag = (e: React.PointerEvent) => {
+    e.preventDefault()
+    const move = (ev: PointerEvent) => {
+      const el = ref.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      setRatio((ev.clientX - r.left) / r.width)
+    }
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      document.body.style.userSelect = ''
+    }
+    document.body.style.userSelect = 'none'
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+
+  return (
+    <div ref={ref} className="flex h-full">
+      <div className="h-full overflow-y-auto" style={{ width: `${ratio * 100}%` }}>{children}</div>
+      <div
+        onPointerDown={startDrag}
+        title="드래그하여 크기 조절"
+        className="w-1.5 shrink-0 cursor-col-resize bg-zinc-200 transition-colors hover:bg-blue-400 dark:bg-zinc-800 dark:hover:bg-blue-500"
+      />
+      <div className="flex h-full min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-1.5 dark:border-zinc-800">
+          <span className="text-[12px] font-semibold text-zinc-400">분할 뷰</span>
+          <select
+            value={rightView}
+            onChange={e => setRightView(e.target.value as RightView)}
+            className="rounded-md border border-zinc-200 bg-transparent px-2 py-1 text-[13px] font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200 dark:[&>option]:bg-zinc-900"
+          >
+            {(Object.keys(RIGHT_VIEWS) as RightView[]).map(k => <option key={k} value={k}>{RIGHT_VIEWS[k].label}</option>)}
+          </select>
+          <button onClick={toggle} title="분할 닫기" className="ml-auto rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <RightComp />
+        </div>
+      </div>
+    </div>
   )
 }
 

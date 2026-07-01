@@ -1,7 +1,8 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { Inbox, Sun, CalendarClock, CalendarRange, CalendarDays, Plus, Pencil, Trash2, Settings, Moon, SunMedium, LayoutGrid, HelpCircle, X, Folder, FolderPlus, FolderMinus, Archive, ArchiveRestore, ChevronDown, ChevronRight } from 'lucide-react'
+import { Inbox, Sun, CalendarClock, CalendarRange, CalendarDays, Plus, Pencil, Trash2, Settings, Moon, SunMedium, LayoutGrid, HelpCircle, X, Folder, FolderPlus, FolderMinus, Archive, ArchiveRestore, ChevronDown, ChevronRight, Columns2 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useStore, selInbox, selToday, selOverdue, selDated, selWeek } from '../store/store'
+import { useSplit } from '../store/splitStore'
 import { wsColor, type Workspace, type Folder as FolderT } from '../types'
 import { onSyncStatus, retryNow, type SyncStatus } from '../lib/sync'
 import { promptDialog, confirmDialog, choiceDialog } from '../store/dialogStore'
@@ -242,6 +243,8 @@ function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onTog
 
   // 드래그앤드롭: 프로젝트를 폴더(또는 폴더 없음)로 끌어 담기
   const updateWorkspace = useStore(s => s.updateWorkspace)
+  const splitOn = useSplit(s => s.on)
+  const toggleSplit = useSplit(s => s.toggle)
   const [dragId, setDragId] = useState<string | null>(null)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -344,8 +347,15 @@ function SidebarContent({ dark, onToggleTheme, onClose }: { dark: boolean; onTog
           설정
         </NavLink>
         <button
+          onClick={toggleSplit}
+          className={`ml-auto rounded-md p-1.5 ${splitOn ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100'}`}
+          title="화면 좌우 분할"
+        >
+          <Columns2 size={15.5} />
+        </button>
+        <button
           onClick={onToggleTheme}
-          className="ml-auto rounded-md p-1.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+          className="rounded-md p-1.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           title="테마 전환"
         >
           {dark ? <SunMedium size={15.5} /> : <Moon size={15.5} />}
