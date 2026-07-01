@@ -9,6 +9,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { wsColor, type Task, type ChecklistItem } from '../types'
 import { useStore, projectColor, nid } from '../store/store'
 import ProjectChip from './ProjectChip'
+import TagChip from './TagChip'
 import PlanPopover from './PlanPopover'
 import { useTaskContextMenu, useContextMenu, MenuItem } from './TaskContextMenu'
 import { promptDialog } from '../store/dialogStore'
@@ -98,6 +99,7 @@ export default function TaskRow({
 
         {/* 날짜·프로젝트 등 — 모바일에선 제목 아래 줄로 줄바꿈(들여쓰기) */}
         <div className="flex shrink-0 items-center gap-2 max-md:order-last max-md:basis-full max-md:pl-[46px]">
+          {(task.tags ?? []).map(tag => <TagChip key={tag} tag={tag} />)}
           {task.deadline && !done && <DeadlineBadge deadline={task.deadline} />}
           <ScheduleChip task={task} selected={selected} />
           <ProjectControl task={task} selected={selected} />

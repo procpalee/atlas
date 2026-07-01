@@ -111,6 +111,8 @@ export interface Task {
   today_position: number | null
   checklist: ChecklistItem[]
   recurrence: Recurrence | null
+  /** 자유 태그 (#태그) — 프로젝트와 별개의 가로 분류. 색은 이름 해시로 파생 */
+  tags: string[]
   created_at: string
   updated_at: string
   completed_at: string | null
@@ -133,4 +135,11 @@ export function wsColor(wsId: string | null, workspaces: Workspace[]): string {
   if (ws?.color) return ws.color
   const idx = workspaces.findIndex(w => w.id === wsId)
   return paletteColor(idx)
+}
+
+/** 태그 색 — 이름 해시로 팔레트에서 파생(별도 저장 없음) */
+export function tagColor(tag: string): string {
+  let h = 0
+  for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) >>> 0
+  return WS_PALETTE[h % WS_PALETTE.length]
 }

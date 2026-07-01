@@ -13,12 +13,12 @@ import { todayStr, toStr } from '../lib/dates'
 import { eventDays, type GcalEvent } from '../lib/gcal'
 import ProjectChip from '../components/ProjectChip'
 import GcalEventModal from '../components/GcalEventModal'
+import FilterBar, { useTaskFilter } from '../components/FilterBar'
 
 const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
 
 export default function CalendarPage() {
   const tasks = useStore(s => s.tasks)
-  const workspaces = useStore(s => s.workspaces)
   const projects = useStore(s => s.projects)
   const updateTask = useStore(s => s.updateTask)
   const [view, setView] = useState<'month' | 'week'>('month')
@@ -34,15 +34,9 @@ export default function CalendarPage() {
   // 구글 일정 생성/편집 모달
   const [modalEvent, setModalEvent] = useState<GcalEvent | null>(null)
   const [createDate, setCreateDate] = useState<string | null>(null)
-  // 워크스페이스·프로젝트 필터 (''=전체)
-  const [fWs, setFWs] = useState('') // ''=전체, '__none'=워크스페이스 없음
-  const [fProj, setFProj] = useState('')
-  const passF = (t: Task) => {
-    if (fWs === '__none') { if (t.workspace_id) return false }
-    else if (fWs && t.workspace_id !== fWs) return false
-    if (fProj && t.project_id !== fProj) return false
-    return true
-  }
+  // 워크스페이스·프로젝트·태그 필터 (공용 FilterBar, localStorage 영속)
+  const filter = useTaskFilter('pd-filter-calendar')
+  const passF = filter.pass
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -105,7 +99,7 @@ export default function CalendarPage() {
     for (const list of map.values()) list.sort((a, b) => (a.today_position ?? 1e12) - (b.today_position ?? 1e12) || a.position - b.position)
     return map
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, fWs, fProj])
+  }, [tasks, filter.f])
 
   const deadlineByDate = useMemo(() => {
     const map = new Map<string, Task[]>()
@@ -116,11 +110,10 @@ export default function CalendarPage() {
     }
     return map
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, fWs, fProj])
+  }, [tasks, filter.f])
 
-  const fInbox = useMemo(() => inbox.filter(passF), [inbox, fWs, fProj]) // eslint-disable-line react-hooks/exhaustive-deps
-  const fSomeday = useMemo(() => someday.filter(passF), [someday, fWs, fProj]) // eslint-disable-line react-hooks/exhaustive-deps
-  const projOptions = useMemo(() => (fWs ? projects.filter(p => p.workspace_id === fWs) : projects), [projects, fWs])
+  const fInbox = useMemo(() => inbox.filter(passF), [inbox, filter.f]) // eslint-disable-line react-hooks/exhaustive-deps
+  const fSomeday = useMemo(() => someday.filter(passF), [someday, filter.f]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onDragEnd = (e: DragEndEvent) => {
     setActiveId(null)
@@ -176,29 +169,8 @@ export default function CalendarPage() {
           >월</button>
         </div>
 
-        {/* 워크스페이스·프로젝트 필터 */}
-        <select
-          className="input !h-7 !w-auto !py-0 !text-[13px]"
-          value={fWs}
-          onChange={e => { setFWs(e.target.value); setFProj('') }}
-          title="프로젝트 필터"
-        >
-          <option value="">전체 프로젝트</option>
-          <option value="__none">프로젝트 없음</option>
-          {workspaces.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-        </select>
-        <select
-          className="input !h-7 !w-auto !py-0 !text-[13px]"
-          value={fProj}
-          onChange={e => setFProj(e.target.value)}
-          title="서브프로젝트 필터"
-        >
-          <option value="">전체 서브프로젝트</option>
-          {projOptions.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-        </select>
-        {(fWs || fProj) && (
-          <button className="btn !px-1.5 !py-0.5 !text-[12px]" onClick={() => { setFWs(''); setFProj('') }} title="필터 초기화">초기화</button>
-        )}
+        {/* 프로젝트·서브프로젝트·태그 필터 (공용) */}
+        <FilterBar filter={filter} />
 
         <div className="ml-auto flex items-center gap-1">
           <button className="btn !px-2" onClick={() => step(-1)} title={view === 'week' ? '이전 주' : '이전 달'}><ChevronLeft size={14} /></button>

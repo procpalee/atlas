@@ -77,7 +77,7 @@ export default function InboxPage() {
   const parsed = parseQuick(text)
   const submit = () => {
     if (!parsed.title) return
-    addTask({ title: parsed.title, scheduled_date: parsed.date })
+    addTask({ title: parsed.title, scheduled_date: parsed.date, tags: parsed.tags })
     setText('')
   }
 

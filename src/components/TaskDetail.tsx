@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Trash2, X, Repeat, Star } from 'lucide-react'
-import { useStore, bucketOf, bucketPatch } from '../store/store'
+import { useStore, bucketOf, bucketPatch, selAllTags } from '../store/store'
+import TagChip from './TagChip'
 import { BUCKET_LABEL, BUCKET_ORDER, type Bucket, type Recurrence } from '../types'
 import { todayStr, toStr } from '../lib/dates'
 import { addDays } from 'date-fns'
@@ -21,6 +22,8 @@ export default function TaskDetail({ taskId, onClose }: { taskId: string; onClos
   const [title, setTitle] = useState(task?.title ?? '')
   const [notes, setNotes] = useState(task?.notes ?? '')
   const [addSubSignal, setAddSubSignal] = useState(0) // 증가하면 Checklist가 새 서브태스크 입력을 연다
+  const [tagInput, setTagInput] = useState('')
+  const allTags = useStore(selAllTags)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -196,6 +199,32 @@ export default function TaskDetail({ taskId, onClose }: { taskId: string; onClos
                 </select>
               </label>
             )}
+          </div>
+
+          <div>
+            <span className="mb-1 block text-[12.5px] font-semibold text-zinc-400">태그</span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(task.tags ?? []).map(tag => (
+                <TagChip key={tag} tag={tag} onRemove={() => updateTask(task.id, { tags: task.tags.filter(t => t !== tag) })} />
+              ))}
+              <input
+                className="input !w-44 !py-1 !text-[13px]"
+                list="pd-all-tags"
+                placeholder="#태그 추가 — Enter"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key !== 'Enter') return
+                  e.preventDefault()
+                  const v = tagInput.replace(/^#/, '').replace(/\s+/g, '').trim()
+                  if (v && !(task.tags ?? []).includes(v)) updateTask(task.id, { tags: [...(task.tags ?? []), v] })
+                  setTagInput('')
+                }}
+              />
+              <datalist id="pd-all-tags">
+                {allTags.filter(t => !(task.tags ?? []).includes(t)).map(t => <option key={t} value={t} />)}
+              </datalist>
+            </div>
           </div>
 
           <div>

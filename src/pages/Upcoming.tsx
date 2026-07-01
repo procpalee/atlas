@@ -7,6 +7,7 @@ import { addDays } from 'date-fns'
 import TaskRow from '../components/TaskRow'
 import DoneSection from '../components/DoneSection'
 import EmptyState from '../components/EmptyState'
+import FilterBar, { useTaskFilter } from '../components/FilterBar'
 import { AlarmClockOff, CalendarClock, CalendarDays } from 'lucide-react'
 import type { Task } from '../types'
 import type { GcalEvent } from '../lib/gcal'
@@ -34,7 +35,9 @@ function bucketOfDate(date: string, today: string, tomorrow: string, twEnd: stri
 }
 
 export default function UpcomingPage() {
-  const dated = useStore(useShallow(selDated))
+  const filter = useTaskFilter('pd-filter-upcoming')
+  const datedAll = useStore(useShallow(selDated))
+  const dated = useMemo(() => datedAll.filter(filter.pass), [datedAll, filter.f]) // eslint-disable-line react-hooks/exhaustive-deps
   const doneDated = useStore(useShallow((s: Parameters<typeof selDated>[0]) =>
     s.tasks.filter(t => t.status === 'done' && t.scheduled_date && visibleDone(t))
       .sort((a, b) => (b.completed_at ?? '').localeCompare(a.completed_at ?? '')),
@@ -79,9 +82,10 @@ export default function UpcomingPage() {
 
   return (
     <div className="mx-auto max-w-[760px] px-5 py-5">
-      <div className="mb-4 flex items-baseline gap-3">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <h1 className="text-[19px] font-bold tracking-tight">Upcoming</h1>
         <span className="text-[13.5px] font-medium text-zinc-400">예정 {total}건{overdueTasks.length ? ` · 지연 ${overdueTasks.length}` : ''}</span>
+        <FilterBar filter={filter} />
       </div>
 
       {BUCKETS.map(b => {

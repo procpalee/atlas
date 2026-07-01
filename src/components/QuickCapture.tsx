@@ -37,7 +37,7 @@ export default function QuickCapture() {
 
   const submit = () => {
     if (!parsed.title) return
-    addTask({ title: parsed.title, scheduled_date: parsed.date })
+    addTask({ title: parsed.title, scheduled_date: parsed.date, tags: parsed.tags })
     // 연속 캡처 — 입력창은 열어둔 채 비우고, 추가됨을 토스트로 알림
     window.dispatchEvent(new CustomEvent('pd:flash', { detail: parsed.date ? `추가됨 · ${fmtDate(parsed.date)}` : '추가됨 · Inbox' }))
     setText('')
@@ -67,9 +67,13 @@ export default function QuickCapture() {
         </div>
         <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50 px-4 py-2 text-[12.5px] text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900/60">
           <span>
-            {parsed.date
-              ? <>실행일 <b className="text-blue-600 dark:text-blue-400">{fmtDate(parsed.date)}</b> · "{parsed.title}"</>
-              : '날짜 토큰: 오늘 · 내일 · 모레 · 금요일 · 다음주 월 · 6월 30일'}
+            {parsed.date || parsed.tags.length
+              ? <>
+                  {parsed.date && <>실행일 <b className="text-blue-600 dark:text-blue-400">{fmtDate(parsed.date)}</b> · </>}
+                  {parsed.tags.length > 0 && <>{parsed.tags.map(t => <b key={t} className="mr-1 text-violet-600 dark:text-violet-400">#{t}</b>)} · </>}
+                  "{parsed.title}"
+                </>
+              : '토큰: 오늘 · 내일 · 금요일 · 다음주 월 · 6월 30일 · #태그'}
           </span>
           <span>Enter 추가 · Esc 닫기</span>
         </div>

@@ -39,14 +39,21 @@ export function nextOccurrence(dateStr: string, rec: Recurrence): string {
 const WEEKDAYS: Record<string, number> = { 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6 }
 
 /**
- * 빠른 캡처용 한국어 날짜 파싱.
- * "보고서 작성 내일" → { title:"보고서 작성", date:내일 }
- * 지원: 오늘/내일/모레/다음주/이번주/X요일/다음주 X요일/M월 D일/M/D
+ * 빠른 캡처용 한국어 날짜·태그 파싱.
+ * "보고서 작성 내일 #업무" → { title:"보고서 작성", date:내일, tags:['업무'] }
+ * 날짜: 오늘/내일/모레/다음주/이번주/X요일/다음주 X요일/M월 D일/M/D · 태그: #없는공백단어
  */
-export function parseQuick(input: string): { title: string; date: string | null } {
+export function parseQuick(input: string): { title: string; date: string | null; tags: string[] } {
   let text = input.trim()
   let date: string | null = null
   const today = new Date()
+
+  // #태그 추출 (제목에서 제거)
+  const tags: string[] = []
+  text = text.replace(/(?:^|\s)#([^\s#]+)/g, (_, tag: string) => {
+    if (!tags.includes(tag)) tags.push(tag)
+    return ' '
+  }).replace(/\s{2,}/g, ' ').trim()
 
   const apply = (re: RegExp, fn: (m: RegExpMatchArray) => Date | null) => {
     if (date) return
@@ -83,5 +90,5 @@ export function parseQuick(input: string): { title: string; date: string | null 
     return d < today ? new Date(today.getFullYear() + 1, Number(m[1]) - 1, Number(m[2])) : d
   })
 
-  return { title: text, date }
+  return { title: text, date, tags }
 }

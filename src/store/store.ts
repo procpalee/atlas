@@ -425,6 +425,7 @@ export const useStore = create<Store>((set, get) => ({
       today_position: t.today_position ?? null,
       checklist: t.checklist ?? [],
       recurrence: t.recurrence ?? null,
+      tags: t.tags ?? [],
       created_at: nowISO(),
       updated_at: nowISO(),
       completed_at: null,
@@ -661,6 +662,13 @@ export function projectColor(projectId: string | null, projects: Project[]): str
   if (!p) return '#71717a'
   const siblings = projects.filter(x => x.workspace_id === p.workspace_id).sort((a, b) => a.position - b.position)
   return paletteColor(siblings.findIndex(x => x.id === projectId))
+}
+
+/** 전체 태스크에서 유니크 태그 목록 (가나다순) — 자동완성·필터용 */
+export const selAllTags = (s: Store): string[] => {
+  const set = new Set<string>()
+  for (const t of s.tasks) for (const tag of t.tags ?? []) set.add(tag)
+  return [...set].sort((a, b) => a.localeCompare(b, 'ko'))
 }
 
 /** done 컬럼 7일 자동 숨김 필터 */
