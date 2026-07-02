@@ -14,7 +14,7 @@ import { fmtDateShort } from '../../lib/dates'
 import { between } from '../../lib/position'
 import { groupTasks, countCk, type GroupBy, type TaskGroup } from '../../lib/group'
 import type { Phase, Project } from '../../types'
-import { DeadlineBadge, Subtasks, InlineSubAdd, addCkAtDepth } from '../TaskRow'
+import { DeadlineBadge, Subtasks, InlineSubAdd, InlineTitleEdit, addCkAtDepth } from '../TaskRow'
 
 /** 노션식 테이블 뷰 — 그룹화(상태/라벨/프로젝트/Phase/없음)·접기·인라인 완료/상태·라벨 + 키보드 선택 + 드래그 */
 export default function ProjectTable({
@@ -251,6 +251,7 @@ function Row({ task, gridCls, onOpen, onToggleDone }: {
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
   const selected = useStore(s => s.hoverTaskId === task.id)
+  const editing = useStore(s => s.editTaskId === task.id)
   const updateTask = useStore(s => s.updateTask)
   const addingSub = useStore(s => s.addSubFor === task.id)
   const setAddSubFor = useStore(s => s.setAddSubFor)
@@ -281,10 +282,14 @@ function Row({ task, gridCls, onOpen, onToggleDone }: {
         {done ? <SquareCheckBig size={16} /> : <Square size={16} />}
       </button>
 
-      <button className="flex min-w-0 items-center gap-2 text-left" onClick={() => onOpen(task.id)}>
-        <span className={`truncate text-[14px] ${done ? 'text-zinc-400 line-through' : ''}`}>{task.title}</span>
-        {ckTotal > 0 && <span className="shrink-0 text-[12px] font-medium text-zinc-400">{ckDone}/{ckTotal}</span>}
-      </button>
+      {editing ? (
+        <InlineTitleEdit task={task} />
+      ) : (
+        <button className="flex min-w-0 items-center gap-2 text-left" onClick={() => onOpen(task.id)}>
+          <span className={`truncate text-[14px] ${done ? 'text-zinc-400 line-through' : ''}`}>{task.title || <span className="text-zinc-400">제목 없음</span>}</span>
+          {ckTotal > 0 && <span className="shrink-0 text-[12px] font-medium text-zinc-400">{ckDone}/{ckTotal}</span>}
+        </button>
+      )}
 
       <span className="flex items-center gap-1.5" title={BUCKET_LABEL[col]}>
         <span className={`h-2 w-2 shrink-0 rounded-full ${BUCKET_DOT[col as Bucket]}`} />

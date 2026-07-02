@@ -44,6 +44,11 @@ interface Store {
   /** 리스트에서 인라인 서브태스크 입력을 띄울 태스크 id (Shift+Enter) */
   addSubFor: string | null
   setAddSubFor: (id: string | null) => void
+  /** 제목을 인라인 편집 중인 태스크 id (Enter로 아래에 새 태스크 생성 시 자동 편집) */
+  editTaskId: string | null
+  setEditTask: (id: string | null) => void
+  /** 선택 태스크 바로 아래에 같은 맥락(날짜·프로젝트·섹션)의 새 태스크를 만들고 인라인 편집 시작. 새 id 반환 */
+  addTaskAfter: (afterId: string) => string | null
   openDetail: (id: string | null) => void
   setHoverTask: (id: string | null) => void
   /** 현재 화면의 키보드 내비 대상 순서(flat). 페이지가 등록 */
@@ -199,7 +204,29 @@ export const useStore = create<Store>((set, get) => ({
   quickFocus: -1,
   addSubFor: null,
   setAddSubFor: id => set({ addSubFor: id }),
-  openDetail: id => set({ detailTaskId: id, hoverTaskId: null, quickFocus: -1, addSubFor: null }),
+  editTaskId: null,
+  setEditTask: id => set({ editTaskId: id }),
+  addTaskAfter: afterId => {
+    const src = get().tasks.find(t => t.id === afterId)
+    if (!src) return null
+    beginBatch()
+    const id = get().addTask({
+      title: '',
+      workspace_id: src.workspace_id,
+      project_id: src.project_id,
+      someday: src.someday,
+      scheduled_date: src.scheduled_date,
+      today_section: src.today_section,
+    })
+    // 원본 바로 아래로 (형제 간격 GAP=1024이라 +1이면 다음 항목보다 앞)
+    const patch: Partial<Task> = { position: src.position + 1 }
+    if (src.today_position != null) patch.today_position = src.today_position + 1
+    get().updateTask(id, patch)
+    endBatch('태스크 추가')
+    set({ editTaskId: id, hoverTaskId: id, quickFocus: -1, detailTaskId: null, addSubFor: null })
+    return id
+  },
+  openDetail: id => set({ detailTaskId: id, hoverTaskId: null, quickFocus: -1, addSubFor: null, editTaskId: null }),
   setHoverTask: id => set({ hoverTaskId: id, quickFocus: -1, addSubFor: null }),
   setQuickFocus: n => set({ quickFocus: n }),
   setNavOrder: (ids, kind = 'task') => set({ navOrder: ids, navKind: kind }),

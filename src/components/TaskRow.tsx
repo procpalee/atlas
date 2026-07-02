@@ -48,6 +48,7 @@ export default function TaskRow({
   const toggleDone = useStore(s => s.toggleDone)
   const updateTask = useStore(s => s.updateTask)
   const selected = useStore(s => s.hoverTaskId === task.id)
+  const editing = useStore(s => s.editTaskId === task.id)
   const multiSelected = useStore(s => s.selectedIds.includes(task.id))
   const toggleSelected = useStore(s => s.toggleSelected)
   const selectRangeTo = useStore(s => s.selectRangeTo)
@@ -93,9 +94,13 @@ export default function TaskRow({
           {done ? <SquareCheckBig size={17} /> : <Square size={17} />}
         </button>
 
-        <span className={`min-w-0 flex-1 truncate text-[14.5px] ${done ? 'text-zinc-400 line-through dark:text-zinc-500' : task.important ? 'font-semibold text-amber-700 dark:text-amber-300' : ''}`}>
-          {task.title}
-        </span>
+        {editing ? (
+          <InlineTitleEdit task={task} />
+        ) : (
+          <span className={`min-w-0 flex-1 truncate text-[14.5px] ${done ? 'text-zinc-400 line-through dark:text-zinc-500' : task.important ? 'font-semibold text-amber-700 dark:text-amber-300' : ''}`}>
+            {task.title || <span className="text-zinc-400">제목 없음</span>}
+          </span>
+        )}
 
         {/* 날짜·프로젝트 등 — 모바일에선 제목 아래 줄로 줄바꿈(들여쓰기) */}
         <div className="flex shrink-0 items-center gap-2 max-md:order-last max-md:basis-full max-md:pl-[46px]">
@@ -133,6 +138,58 @@ export default function TaskRow({
 
       {ctxMenu}
     </div>
+  )
+}
+
+/** 태스크 제목 인라인 편집 — Enter 저장 후 아래에 새 태스크 연속 추가, Shift+Enter 서브태스크, Esc 종료.
+ *  빈 제목으로 확정/이탈하면 그 태스크는 삭제(빈 껍데기 방지). */
+export function InlineTitleEdit({ task }: { task: Task }) {
+  const updateTask = useStore(s => s.updateTask)
+  const deleteTask = useStore(s => s.deleteTask)
+  const addTaskAfter = useStore(s => s.addTaskAfter)
+  const setEditTask = useStore(s => s.setEditTask)
+  const setAddSubFor = useStore(s => s.setAddSubFor)
+  const setHoverTask = useStore(s => s.setHoverTask)
+  const [v, setV] = useState(task.title)
+
+  // 저장. 빈 값이면 태스크 삭제하고 false 반환(연쇄 중단용)
+  const commit = (): boolean => {
+    const t = v.trim()
+    if (!t) { deleteTask(task.id); return false }
+    if (t !== task.title) updateTask(task.id, { title: t })
+    return true
+  }
+
+  return (
+    <input
+      autoFocus
+      className="min-w-0 flex-1 bg-transparent text-[14.5px] outline-none placeholder:text-zinc-400"
+      placeholder="태스크 제목"
+      value={v}
+      onChange={e => setV(e.target.value)}
+      onClick={e => e.stopPropagation()}
+      onPointerDown={e => e.stopPropagation()}
+      onKeyDown={e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault()
+          if (commit()) addTaskAfter(task.id) // 저장 → 바로 아래에 새 태스크(자동 편집)
+          else setEditTask(null)
+        } else if (e.key === 'Enter' && e.shiftKey) {
+          e.preventDefault()
+          if (commit()) { setEditTask(null); setAddSubFor(task.id) } // 서브태스크 인라인 추가
+          else setEditTask(null)
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          if (!v.trim()) deleteTask(task.id)
+          setEditTask(null)
+        }
+      }}
+      onBlur={() => {
+        commit()
+        // 연쇄로 다른 태스크 편집이 시작됐으면(=editTaskId가 바뀜) 여기서 해제하지 않는다
+        if (useStore.getState().editTaskId === task.id) { setEditTask(null); setHoverTask(null) }
+      }}
+    />
   )
 }
 

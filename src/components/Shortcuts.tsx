@@ -29,8 +29,9 @@ export const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: 'D', desc: '선택 태스크: 마감일(Deadline)' },
   { keys: 'I', desc: '선택 태스크: Inbox로 (날짜·Someday 해제)' },
   { keys: 'Space', desc: '선택 태스크: 완료 토글' },
-  { keys: 'Enter', desc: '선택 태스크: 상세 팝업' },
+  { keys: 'Enter', desc: '선택 태스크: 바로 아래에 새 태스크(인라인 입력)' },
   { keys: 'Shift Enter', desc: '선택 태스크: 서브태스크 추가(인라인)' },
+  { keys: 'P / 클릭', desc: '선택 태스크: 상세 팝업 열기' },
   { keys: 'Del', desc: '선택 태스크: 삭제 (Ctrl+Z 복원)' },
   { keys: '← / →', desc: '워크스페이스·프로젝트: 탭 전환 (선택 없을 때)' },
   { keys: 'Backspace', desc: '뒤로가기' },
@@ -276,7 +277,7 @@ export default function Shortcuts() {
         return
       }
 
-      if (e.key === 'Enter') { e.preventDefault(); store.openDetail(hover!); return }
+      if (e.key === 'Enter') { e.preventDefault(); store.addTaskAfter(hover!); return } // 아래에 새 태스크(상세는 클릭/P)
       if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); store.toggleDone(hover!); return }
       if (e.key === 'Delete') {
         e.preventDefault()
