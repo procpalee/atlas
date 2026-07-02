@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Trash2, X, Repeat, Star } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 import { useStore, bucketOf, bucketPatch, selAllTags } from '../store/store'
 import TagChip from './TagChip'
 import { BUCKET_LABEL, BUCKET_ORDER, type Bucket, type Recurrence } from '../types'
@@ -23,7 +24,7 @@ export default function TaskDetail({ taskId, onClose }: { taskId: string; onClos
   const [notes, setNotes] = useState(task?.notes ?? '')
   const [addSubSignal, setAddSubSignal] = useState(0) // 증가하면 Checklist가 새 서브태스크 입력을 연다
   const [tagInput, setTagInput] = useState('')
-  const allTags = useStore(selAllTags)
+  const allTags = useStore(useShallow(selAllTags)) // selAllTags는 매번 새 배열 — useShallow 필수(없으면 무한 리렌더로 앱 크래시)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

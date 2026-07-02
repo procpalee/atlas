@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useStore, selAllTags } from '../store/store'
 import type { Task } from '../types'
 
@@ -34,7 +35,7 @@ export function useTaskFilter(storageKey: string) {
 export default function FilterBar({ filter }: { filter: ReturnType<typeof useTaskFilter> }) {
   const workspaces = useStore(s => s.workspaces)
   const projects = useStore(s => s.projects)
-  const allTags = useStore(selAllTags)
+  const allTags = useStore(useShallow(selAllTags)) // selAllTags는 매번 새 배열 — useShallow 필수
   const { f, set, active, reset } = filter
   const projOptions = f.ws && f.ws !== '__none' ? projects.filter(p => p.workspace_id === f.ws) : projects
 
