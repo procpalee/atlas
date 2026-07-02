@@ -100,9 +100,7 @@ export default function InboxPage() {
     return { noWs, groups }
   }, [inbox, workspaces])
 
-  const inboxIds = useMemo(() => [...noWs, ...groups.flatMap(g => g.tasks)].map(t => t.id), [noWs, groups])
   const somedayIds = useMemo(() => someday.map(t => t.id), [someday])
-
   const simpleIds = useMemo(() => noWs.map(t => t.id), [noWs])
   const projIds = useMemo(() => groups.flatMap(g => g.tasks).map(t => t.id), [groups])
   const projCount = projIds.length
@@ -133,7 +131,8 @@ export default function InboxPage() {
     let targetWs: string // inbox일 때 목표 그룹 키
     let neighborId: string | null
     if (overId === 'someday') { toSomeday = true; targetWs = wsKey(a); neighborId = null }
-    else if (overId === 'inbox') { toSomeday = false; targetWs = wsKey(a); neighborId = null }
+    else if (overId === 'inbox') { toSomeday = false; targetWs = NONE; neighborId = null } // 왼쪽 패널 = 단순 태스크로 (프로젝트 해제)
+    else if (overId.startsWith('ws:')) { toSomeday = false; targetWs = overId.slice(3); neighborId = null } // 프로젝트 패널의 워크스페이스 그룹에 배정
     else {
       const ot = [...inbox, ...someday].find(t => t.id === overId)
       if (!ot) return
@@ -180,9 +179,7 @@ export default function InboxPage() {
           <div className="min-w-0">
             <div className="mb-4 flex items-baseline gap-3 px-1">
               <h1 className="text-[19px] font-bold tracking-tight">Inbox</h1>
-              <span className="text-[13.5px] font-medium text-zinc-400">
-                {noWs.length}건{projCount > 0 && ` · 프로젝트 ${projCount}`}
-              </span>
+              <span className="text-[13.5px] font-medium text-zinc-400">{noWs.length}건</span>
             </div>
 
             {/* 빠른 입력 — 모바일에선 + 버튼(전역 캡처)으로 대체되므로 숨김 */}
@@ -207,8 +204,8 @@ export default function InboxPage() {
               )}
             </div>
 
-            <SortableContext items={inboxIds} strategy={verticalListSortingStrategy}>
-              {/* 단순 태스크 — 프로젝트 없이 바로 적는 스크래치패드 (Inbox의 기본 영역) */}
+            {/* 단순 태스크 — 프로젝트 없이 바로 적는 스크래치패드 (Inbox의 기본 영역) */}
+            <SortableContext items={simpleIds} strategy={verticalListSortingStrategy}>
               {noWs.length > 0 && (
                 <section className="mb-4">
                   {noWs.map(t => <SortableRow key={t.id} task={t} />)}
@@ -217,35 +214,53 @@ export default function InboxPage() {
               {noWs.length === 0 && (
                 <EmptyState icon={Plus} title="Inbox가 비었습니다 ✓" hint="생각나는 일을 위 입력칸이나 Ctrl+K로 바로 적어두세요" />
               )}
-
-              {/* 프로젝트 태스크 — 프로젝트에 소속된 미배정(날짜 없음) 태스크. 접이식(기본 접힘) */}
-              {projCount > 0 && (
-                <section className="mt-5 border-t border-zinc-200 pt-2 dark:border-zinc-800">
-                  <button
-                    onClick={toggleProj}
-                    className="mb-1.5 flex w-full items-center gap-1.5 rounded px-1.5 py-0.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
-                  >
-                    {projVisible ? <ChevronDown size={14} className="text-zinc-400" /> : <ChevronRight size={14} className="text-zinc-400" />}
-                    <Folder size={13} className="text-zinc-400" />
-                    <span className="text-[14px] font-bold tracking-tight text-zinc-600 dark:text-zinc-300">프로젝트 태스크</span>
-                    <span className="text-[12.5px] font-semibold text-zinc-400">{projCount}</span>
-                  </button>
-                  {projVisible && groups.map(({ ws, tasks }) => (
-                    <section key={ws.id} className="mb-4">
-                      <GroupHead label={ws.name} count={tasks.length} />
-                      {tasks.map(t => <SortableRow key={t.id} task={t} />)}
-                    </section>
-                  ))}
-                </section>
-              )}
             </SortableContext>
 
             <DoneSection tasks={doneInbox} storageKey="pd-inbox-done" className="mt-4" />
           </div>
         </DropColumn>
 
+        {/* 가운데 — 프로젝트 태스크 레일. Someday와 같은 드로어 문법(접으면 세로 탭, 드래그 중 자동 노출) */}
+        {projCount > 0 && (
+          <div className={projVisible ? 'lg:w-[380px] lg:shrink-0' : 'lg:w-[46px] lg:shrink-0'}>
+            {projVisible ? (
+              <div className="min-w-0">
+                <div className="mb-3 flex items-center gap-2 px-1">
+                  <Folder size={15} className="shrink-0 text-zinc-400" />
+                  <h2 className="text-[16px] font-bold tracking-tight text-zinc-600 dark:text-zinc-300">프로젝트 태스크</h2>
+                  <span className="text-[12.5px] font-semibold text-zinc-400">{projCount}</span>
+                  <button onClick={toggleProj} className="ml-auto rounded-md p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200" title="오른쪽으로 접기">
+                    <ChevronRight size={17} />
+                  </button>
+                </div>
+                <div className="min-h-[120px] rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-1.5 dark:border-zinc-800 dark:bg-zinc-900/30">
+                  <SortableContext items={projIds} strategy={verticalListSortingStrategy}>
+                    {groups.map(({ ws, tasks }) => (
+                      <WsDropGroup key={ws.id} wsId={ws.id} label={ws.name} count={tasks.length}>
+                        {tasks.map(t => <SortableRow key={t.id} task={t} />)}
+                      </WsDropGroup>
+                    ))}
+                  </SortableContext>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={toggleProj}
+                title="프로젝트 태스크 펼치기"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 py-2.5 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:bg-zinc-800/60 lg:min-h-[240px] lg:flex-col lg:py-4"
+              >
+                <ChevronDown size={16} className="shrink-0 lg:hidden" />
+                <ChevronLeft size={16} className="hidden shrink-0 lg:block" />
+                <Folder size={15} className="shrink-0" />
+                <span className="text-[13.5px] font-bold tracking-tight lg:[writing-mode:vertical-rl]">프로젝트</span>
+                <span className="text-[12px] font-semibold text-zinc-400">{projCount}</span>
+              </button>
+            )}
+          </div>
+        )}
+
         {/* 오른쪽 — Someday. 우측 드로어처럼 접고 펼친다(접으면 세로 탭, 드래그 중엔 자동 노출) */}
-        <DropColumn id="someday" active={dragId != null} className={sdVisible ? 'lg:w-[500px] lg:shrink-0' : 'lg:w-[46px] lg:shrink-0'}>
+        <DropColumn id="someday" active={dragId != null} className={sdVisible ? 'lg:w-[380px] lg:shrink-0' : 'lg:w-[46px] lg:shrink-0'}>
           {sdVisible ? (
             <div className="min-w-0">
               <div className="mb-3 flex items-center gap-2 px-1">
@@ -304,5 +319,19 @@ function GroupHead({ label, count }: { label: string; count: number }) {
       <span className="text-[13px] font-bold">{label}</span>
       <span className="text-[12px] font-semibold text-zinc-400">{count}</span>
     </div>
+  )
+}
+
+/** 프로젝트 패널의 워크스페이스 그룹 — 그룹 전체가 드롭존(끌어다 놓으면 그 프로젝트로 배정) */
+function WsDropGroup({ wsId, label, count, children }: { wsId: string; label: string; count: number; children: ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `ws:${wsId}` })
+  return (
+    <section
+      ref={setNodeRef}
+      className={`mb-2 rounded-lg p-0.5 transition-colors ${isOver ? 'bg-blue-50/70 ring-2 ring-blue-400/70 dark:bg-blue-950/30' : ''}`}
+    >
+      <GroupHead label={label} count={count} />
+      {children}
+    </section>
   )
 }
