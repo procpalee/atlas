@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Modal from './Modal'
 import { useStore, beginBatch, endBatch } from '../store/store'
+import { promptDialog } from '../store/dialogStore'
 import { todayStr } from '../lib/dates'
 
 /**
@@ -31,7 +32,9 @@ export const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: 'Space', desc: '선택 태스크: 완료 토글' },
   { keys: 'Enter', desc: '선택 태스크: 바로 아래에 새 태스크(인라인 입력)' },
   { keys: 'Shift Enter', desc: '선택 태스크: 서브태스크 추가(인라인)' },
+  { keys: 'Tab', desc: '새 태스크 입력 중: 위 태스크의 서브태스크로 이동' },
   { keys: 'P / 클릭', desc: '선택 태스크: 상세 팝업 열기' },
+  { keys: 'N', desc: '새 프로젝트 / 서브프로젝트(프로젝트 화면·선택 없을 때)' },
   { keys: 'Del', desc: '선택 태스크: 삭제 (Ctrl+Z 복원)' },
   { keys: '← / →', desc: '워크스페이스·프로젝트: 탭 전환 (선택 없을 때)' },
   { keys: 'Backspace', desc: '뒤로가기' },
@@ -151,6 +154,20 @@ export default function Shortcuts() {
         if (e.key === 'Enter' && store.navOrder.length) {
           e.preventDefault()
           store.setHoverTask(store.navOrder[0])
+          return
+        }
+        // N : 프로젝트 화면이면 서브프로젝트, 그 외엔 새 프로젝트 추가
+        if (k === 'n') {
+          e.preventDefault()
+          const seg = window.location.pathname.split('/').filter(Boolean) // ['w', wsId]
+          if (seg[0] === 'w' && seg[1]) {
+            const wsId = seg[1]
+            void promptDialog({ title: '새 서브프로젝트', placeholder: '서브프로젝트 이름', confirmLabel: '만들기' })
+              .then(name => { if (name?.trim()) store.addProject({ workspace_id: wsId, phase_id: null, title: name.trim() }) })
+          } else {
+            void promptDialog({ title: '새 프로젝트', placeholder: '프로젝트 이름', confirmLabel: '만들기' })
+              .then(name => { if (name?.trim()) navigate(`/w/${store.addWorkspace(name.trim())}`) })
+          }
           return
         }
         if (e.key === '?') { e.preventDefault(); setHelp(h => !h) }

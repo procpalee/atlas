@@ -49,6 +49,8 @@ interface Store {
   setEditTask: (id: string | null) => void
   /** 선택 태스크 바로 아래에 같은 맥락(날짜·프로젝트·섹션)의 새 태스크를 만들고 인라인 편집 시작. 새 id 반환 */
   addTaskAfter: (afterId: string) => string | null
+  /** 태스크를 같은 맥락 바로 위 형제의 서브태스크로 강등(Tab). 위 형제가 없으면 null 반환(그대로 유지) */
+  demoteToSubtask: (taskId: string, title?: string) => string | null
   openDetail: (id: string | null) => void
   setHoverTask: (id: string | null) => void
   /** 현재 화면의 키보드 내비 대상 순서(flat). 페이지가 등록 */
@@ -225,6 +227,30 @@ export const useStore = create<Store>((set, get) => ({
     endBatch('태스크 추가')
     set({ editTaskId: id, hoverTaskId: id, quickFocus: -1, detailTaskId: null, addSubFor: null })
     return id
+  },
+  demoteToSubtask: (taskId, title) => {
+    const self = get().tasks.find(t => t.id === taskId)
+    if (!self) return null
+    // 같은 맥락(프로젝트·날짜·Someday·섹션)에서 position이 바로 앞선 미완료 태스크 = 부모 후보
+    const prev = get().tasks
+      .filter(x =>
+        x.id !== taskId && x.status !== 'done' &&
+        x.workspace_id === self.workspace_id && x.project_id === self.project_id &&
+        (x.scheduled_date ?? null) === (self.scheduled_date ?? null) &&
+        x.someday === self.someday && (x.today_section ?? null) === (self.today_section ?? null) &&
+        x.position < self.position,
+      )
+      .sort((a, b) => a.position - b.position)
+      .pop()
+    if (!prev) return null
+    const t = (title ?? self.title).trim()
+    beginBatch()
+    if (t) get().updateTask(prev.id, { checklist: [...prev.checklist, { id: nid('ck'), title: t, done: false, children: [] }] })
+    get().deleteTask(taskId)
+    endBatch('서브태스크로 이동')
+    // 제목 없이 Tab이면 부모 밑에 서브태스크 입력을 열어 이어서 작성
+    set({ editTaskId: null, hoverTaskId: prev.id, quickFocus: -1, addSubFor: t ? null : prev.id })
+    return prev.id
   },
   openDetail: id => set({ detailTaskId: id, hoverTaskId: null, quickFocus: -1, addSubFor: null, editTaskId: null }),
   setHoverTask: id => set({ hoverTaskId: id, quickFocus: -1, addSubFor: null }),

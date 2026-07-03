@@ -147,6 +147,7 @@ export function InlineTitleEdit({ task }: { task: Task }) {
   const updateTask = useStore(s => s.updateTask)
   const deleteTask = useStore(s => s.deleteTask)
   const addTaskAfter = useStore(s => s.addTaskAfter)
+  const demoteToSubtask = useStore(s => s.demoteToSubtask)
   const setEditTask = useStore(s => s.setEditTask)
   const setAddSubFor = useStore(s => s.setAddSubFor)
   const setHoverTask = useStore(s => s.setHoverTask)
@@ -178,6 +179,10 @@ export function InlineTitleEdit({ task }: { task: Task }) {
           e.preventDefault()
           if (commit()) { setEditTask(null); setAddSubFor(task.id) } // 서브태스크 인라인 추가
           else setEditTask(null)
+        } else if (e.key === 'Tab' && !e.shiftKey) {
+          // 바로 위 형제의 서브태스크로 강등. 위 형제 없으면 그대로 편집 유지
+          e.preventDefault()
+          demoteToSubtask(task.id, v.trim())
         } else if (e.key === 'Escape') {
           e.preventDefault()
           if (!v.trim()) deleteTask(task.id)
