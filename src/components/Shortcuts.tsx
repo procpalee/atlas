@@ -32,7 +32,8 @@ export const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: 'Space', desc: '선택 태스크: 완료 토글' },
   { keys: 'Enter', desc: '선택 태스크: 바로 아래에 새 태스크(인라인 입력)' },
   { keys: 'Shift Enter', desc: '선택 태스크: 서브태스크 추가(인라인)' },
-  { keys: 'Tab', desc: '새 태스크 입력 중: 위 태스크의 서브태스크로 이동' },
+  { keys: 'Tab', desc: '새 태스크/서브태스크 입력 중: 한 단계 더 들여쓰기(하위로)' },
+  { keys: 'Enter', desc: '선택 서브태스크: 하위 서브태스크 추가(중첩)' },
   { keys: 'P / 클릭', desc: '선택 태스크: 상세 팝업 열기' },
   { keys: 'N', desc: '새 프로젝트 / 서브프로젝트(프로젝트 화면·선택 없을 때)' },
   { keys: 'Del', desc: '선택 태스크: 삭제 (Ctrl+Z 복원)' },
@@ -278,7 +279,7 @@ export default function Shortcuts() {
         return
       }
 
-      /* 서브태스크(체크리스트 항목) 선택 시 — 완료(Space)/삭제(Delete)만, 그 외 태스크 전용 키 무시 */
+      /* 서브태스크(체크리스트 항목) 선택 시 — 완료(Space)/삭제(Delete)/하위추가(Enter) */
       if (hoverIsSubtask) {
         if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); store.toggleChecklistItem(hover!); return }
         if (e.key === 'Delete') {
@@ -290,7 +291,8 @@ export default function Shortcuts() {
           store.setHoverTask(nextId && nextId !== hover ? nextId : null)
           return
         }
-        if (e.key === 'Enter') { e.preventDefault(); return } // 서브태스크엔 상세 없음
+        // Enter/Shift+Enter : 이 서브태스크 밑에 하위 서브태스크(서브태스크의 서브태스크) 추가 입력
+        if (e.key === 'Enter') { e.preventDefault(); store.setAddSubFor(hover!); return }
         return
       }
 
