@@ -202,6 +202,9 @@ export function InlineTitleEdit({ task }: { task: Task }) {
 export function InlineSubAdd({ onAdd, onClose }: { onAdd: (title: string, depth: number) => void; onClose: () => void }) {
   const [text, setText] = useState('')
   const [depth, setDepth] = useState(0)
+  // 태스크 편집 입력 → 이 입력으로 포커스가 넘어오는 찰나, 포커스를 받기 전의 blur가 먼저 오면
+  // 즉시 닫혀 "사라진 것"처럼 보인다. 실제 포커스를 받은 뒤의 blur만 닫기로 처리.
+  const focused = useRef(false)
   return (
     <div className="py-0.5 pr-2" style={{ paddingLeft: 46 + depth * 20 }} onClick={e => e.stopPropagation()}>
       <input
@@ -210,12 +213,16 @@ export function InlineSubAdd({ onAdd, onClose }: { onAdd: (title: string, depth:
         placeholder={depth > 0 ? `서브태스크 ${depth}단계 — Enter 추가 · Tab/Shift+Tab 단계 이동` : '서브태스크 — Enter 추가 · Tab 들여쓰기 · Esc 종료'}
         value={text}
         onChange={e => setText(e.target.value)}
+        onFocus={() => { focused.current = true }}
         onKeyDown={e => {
           if (e.key === 'Tab') { e.preventDefault(); setDepth(d => e.shiftKey ? Math.max(0, d - 1) : Math.min(d + 1, 6)) }
           else if (e.key === 'Enter') { e.preventDefault(); const v = text.trim(); if (v) { onAdd(v, depth); setText('') } }
           else if (e.key === 'Escape') { e.preventDefault(); onClose() }
         }}
-        onBlur={() => { const v = text.trim(); if (v) onAdd(v, depth); onClose() }}
+        onBlur={() => {
+          if (!focused.current) return // 아직 포커스도 못 받았으면 무시(경합 방지)
+          const v = text.trim(); if (v) onAdd(v, depth); onClose()
+        }}
       />
     </div>
   )
