@@ -1,3 +1,5 @@
+> **⚠️ Moved (2026-07-04)**: Protask now lives as the `protask` module of the unified [`workbench`](../workbench) monorepo (mounted at the root catch-all route). This repo is archived — new work happens in workbench.
+
 <div align="center">
 
 <img src="public/icons/icon-192.png" width="76" height="76" alt="Protask logo" />
