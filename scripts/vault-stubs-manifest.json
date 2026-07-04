@@ -1,0 +1,981 @@
+{
+  "workspaces": [
+    {
+      "id": "ax-board",
+      "name": "업무 AX",
+      "projects": [
+        {
+          "title": "외부데이터 MCP 서버 구축",
+          "descr": "업무에 필요한 데이터·도구 MCP 서버 구축 (DART, Peer-Group, DCF Valuation 등)",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "OpenDART MCP",
+              "done": true,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "Peer-Group MCP",
+              "done": true,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "세법령·예규 데이터 MCP (국세법령정보시스템)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "시장·금융 데이터 MCP (금리, 환율, 채권 수익률 — DCF 할인율 산출용)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "지식관리 MCP 서버 개발",
+          "descr": "회계·내부회계·Valuation·세법 지식을 RAG로 제공하는 지식관리 MCP 서버 — 전체 프로젝트의 두뇌",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "자료 임베딩",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "PDF 파싱 — convert_* 변환기 군(KPMG·Deloitte·ESMA·한공회·기준원·실무사례와해설) 가동, 스캔본은 OCR 트랙 별도",
+              "done": true,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "서버 호스팅",
+              "done": true,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "RAG 품질 평가(eval) 체계 운영 — repo `eval\\` 기반, 임베딩 추가 시마다 회귀 측정 (2026-06: strict+다중정답 lenient 이중 채점, `--rerank --route server` 필수)",
+              "done": true,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "자료 수집 월간 자동화 — `collect_all.py`(kifrs·KICPA 게시판 3종·k-icfr 수집→변환→증분 인덱싱) + 작업 스케줄러 \"회계RAG 월간수집\"(매월 1일 09:00). 팀 배포는 게이트 확인 후 수동 (2026-06-12)",
+              "done": true,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "자료 임베딩",
+              "done": false,
+              "checklist": [
+                {
+                  "title": "IFRS",
+                  "done": true
+                },
+                {
+                  "title": "기준서",
+                  "done": true
+                },
+                {
+                  "title": "질의회신",
+                  "done": true
+                },
+                {
+                  "title": "회계기준원",
+                  "done": true
+                },
+                {
+                  "title": "금융감독원",
+                  "done": true
+                },
+                {
+                  "title": "회계기준원 신속처리질의",
+                  "done": true
+                },
+                {
+                  "title": "IFRS 해석위원회",
+                  "done": true
+                },
+                {
+                  "title": "ESMA 집행사례",
+                  "done": true
+                },
+                {
+                  "title": "KPMG 질의회신",
+                  "done": true
+                },
+                {
+                  "title": "Deloitte 질의회신",
+                  "done": true
+                },
+                {
+                  "title": "실무해설",
+                  "done": true
+                },
+                {
+                  "title": "PWC - 월간공인회계사 기고문",
+                  "done": true
+                },
+                {
+                  "title": "PWC - BRIEF",
+                  "done": true
+                },
+                {
+                  "title": "PWC - DEPTH",
+                  "done": true
+                },
+                {
+                  "title": "한공회 - 월간공인회계사 기고문 (신규 187건 — 기존 PWC와 중복 133건 제거, 스캔본 4건은 비전 전사로 해소. 2026-06-12 백필 +17건 → 204건, 이후 월간 자동)",
+                  "done": true
+                },
+                {
+                  "title": "회계기준원 기고문 (2026-06-12 백필 +14건 → IFRS 66 + K-GAAP 분기, 스캔본 5건 비전 전사. 이후 월간 자동)",
+                  "done": true
+                },
+                {
+                  "title": "한공회 - 전ㆍ당기 협의회 사례 (신규 보드 전건 57건 — IFRS 54 + K-GAAP 3, 안건번호·색인어 메타 포함. 2026-06-12, 이후 월간 자동)",
+                  "done": true
+                },
+                {
+                  "title": "K-IFRS 실무사례와 해설 (사례 561건만 추출 — 해설 본문은 기준서 중복으로 버림, 일반기업회계기준 사례 제외)",
+                  "done": true
+                },
+                {
+                  "title": "k-ifrs 이슈모음(KPMG) (주제 21건)",
+                  "done": true
+                },
+                {
+                  "title": "K-IFRS Brief(KPMG) (개별 PDF와 중복 제거 후 10건)",
+                  "done": true
+                },
+                {
+                  "title": "기준서별 해설(KPMG) (10건)",
+                  "done": true
+                },
+                {
+                  "title": "IFRS 토픽별 해설(KPMG) (152건, 주제 폴더→topic 메타)",
+                  "done": true
+                },
+                {
+                  "title": "기타",
+                  "done": false
+                },
+                {
+                  "title": "마이클 형 실무서 (국제회계기준해설 386MB — 사용자 결정으로 보류)",
+                  "done": false
+                },
+                {
+                  "title": "엘곰 실무사례해설",
+                  "done": false
+                },
+                {
+                  "title": "K-GAAP",
+                  "done": true
+                },
+                {
+                  "title": "기준서",
+                  "done": true
+                },
+                {
+                  "title": "질의회신",
+                  "done": true
+                },
+                {
+                  "title": "회계기준원",
+                  "done": true
+                },
+                {
+                  "title": "신속처리질의",
+                  "done": true
+                },
+                {
+                  "title": "금감원",
+                  "done": true
+                },
+                {
+                  "title": "KPMG (스캔본 29p를 LLM 비전 전사 — DPP 28 + KB 9 = 37건, 2026-06-11)",
+                  "done": true
+                }
+              ],
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "내부회계",
+              "done": true,
+              "checklist": [
+                {
+                  "title": "기준서",
+                  "done": true
+                },
+                {
+                  "title": "설계및운영 개념체계",
+                  "done": true
+                },
+                {
+                  "title": "평가및보고 모범규준, 가이드",
+                  "done": true
+                },
+                {
+                  "title": "질의회신",
+                  "done": true
+                },
+                {
+                  "title": "내부회계운영위원회 Q&A (2026-06-12 백필 +230건 → 968건: 최근 35 + 답변지연 갭 195, 이후 월간 자동)",
+                  "done": true
+                },
+                {
+                  "title": "내부회계관리제도 FAQ",
+                  "done": true
+                }
+              ],
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "회계감사  ※ 2026-06-13 실무자료 326건 MD 변환 완료(convert_audit.py) — **임베딩은 보류**(변환·구조화까지만, 조서 지식팩 설계와 함께 별도 결정). 권위 계층 폴더 체계: 기준서·법규(공식1차) / 기준해설·실무지침·감리사례(공식 지침·사례) / 교육자료(비공식 secondary)",
+              "done": false,
+              "checklist": [
+                {
+                  "title": "감사기준서 (kifrs 38종 — 200~810 + 1100 내부회계감사, A적용자료 포함 2,814문단, 2026-06-12)",
+                  "done": true
+                },
+                {
+                  "title": "감리지적사례 (케이스화 **471건**, 2026-06-13) — **금감원 229**: FSS 게시판 crawl_supervision.py로 개별 케이스 직수집(2011~2025), 목록 메타(코드·계정과목·관련기준서·연도) 그대로 태깅. **한공회 242**: KICPA eNuri 게시판 전수 크롤(crawl_supervision_kicpa.py)+재태깅(retag_kicpa.py) — 개별 케이스 229(FY2020~2025, 쟁점분야→계정·관련기준→relStds·코드연도 교정) + 연도종합 13(FY2013~2019). 두 기관 모두 게시판이 개별 케이스를 공시 → 사이트 메타로 분할·태깅 완료. **KICPA 크롤 성공 키: 경로 /portal/board ❌→/board ✅(AES 아님)**. 한공회 전건 케이스화 완료(연도종합 13건 분할: FY2015~18 regex 42 + FY2013/14/19 서브에이전트 verbatim마커 89 + 단일주제 2 + 중복 4 제거). **2026-06-14 금감원 구 묶음 40건(연도별 11·A-1~E 유형 24·기타 5, 옛 HWP) 케이스 분할(split_fss_bundles.py, 커밋 ef4565b)** — 직접 검증 결과 개별 189와 **중복 아닌 고유 내용**(유형↔연도 중복 0/78)이라 삭제 대신 분할: 가나다 표제+`## 지적사항` 경계로 **444 케이스**(연도별 357+유형 78+단일/요약 폴백), 비케이스 2건 삭제(유형의 구분=분류설명·type_code로 보존 / 회계심사감리2020-2023=PDF 모지바케). **감리사례 995건(금감원 633=개별189+분할444 · 한공회 362), 묶음·유형헤더 0, 고객명 0**",
+                  "done": true
+                },
+                {
+                  "title": "외부감사용 Audit Guide (기준해설 36분할, 2026-06-13) — 통합본(437표) → 조서번호별 36섹션, 표 보존, ISA→감사기준서 relStds 매핑(2700↔320 등)",
+                  "done": true
+                },
+                {
+                  "title": "실무지침 구조화 (2026-06-13) — KPMG 가이던스 23개 번호체계(1.1/1.1.1)→헤딩 +817, 원문 손실 0. 교육자료는 보류(슬라이드 손실)",
+                  "done": true
+                },
+                {
+                  "title": "외감법, 상법 (law.go.kr 6종 898조문 — 외감법+시행령·외부감사규정+시행세칙·상법 3편+시행령, 2026-06-12)",
+                  "done": true
+                },
+                {
+                  "title": "빅펌 감사기준 (MD변환) — KPMG 공식 가이던스: 외부감사 audit guide(기준해설 1), 감사일반·계정과목별APG·그룹감사·IT Audit(실무지침 23) (2026-06-13)",
+                  "done": true
+                },
+                {
+                  "title": "**APG(계정과목별 실증절차) 충실 재구성** (2026-06-14, 커밋 be6b76e) — 핵심자료라 PDF 3rd Ed **98p 전량 비전 전사**(`render_apg.py`, 270° prerotate 렌더→PIL 크롭 판독, 표·절차단계·RMM·K-IFRS문단·KAEG보존)로 **본세트 13계정**(리스·매출·매출채권·무형·법인세·보험업·손상·수익(수주산업)·유형·재고·종업원급여·차입원가·특수관계자). 전사 중 페이지맵 오류 발견→숨은 유형자산·종업원급여 분리. **감사총교육.docx 보완**(`convert_apg_supplement.py`)로 APG미수록 11계정+금융자산분류(1109)=보완 12계정, 병합셀 무손실 접기. 舊 평문추출본·1st Ed docx 11건 제거. 보안 0건. **임베딩 보류**(조서 지식팩과 함께 결정)",
+                  "done": true
+                },
+                {
+                  "title": "교육자료 → **회계감사 교육 매뉴얼 7단계 통합 완성** (저비용 하이브리드, 2026-06-14, 커밋 0535236) — Big4 교육 140 PDF. **방향(사용자 결정)**: KPMG·Deloitte 교육의 전이가능 지식만 모아 **벤더툴·행정 제거(de-vendoring)** 후 **감사 실무 단계별** 매뉴얼로 통합. **순수 툴·행정 7덱 제외**(슬기로운 ICA/EM생활·Engagement setup=KCw·Project_Mgmt·Coaching·Deloitte 인차지메뉴얼), 126덱을 **7단계(01 일반·윤리 / 02 계획·위험평가 / 03 내부통제·통제테스트 / 04 계정과목별 실증(APG링크) / 05 특수영역·회계이슈 / 06 완료·보고 / 07 내부회계ICFR)** 로 매핑. **manual_assemble.py(결정적·에이전트0)**: 덱별 비전MD 우선·없으면 텍스트MD 하이브리드, 출처헤딩 `[KPMG·레벨]`/`[Deloitte]` 병합, 벤더 툴줄 스크럽(KCw·eAudIT·EMS·CAAR), 계정과목별→실무지침 APG·감리→감리사례 DB 링크(중복회피). **산출 125 MD, 고객명0**. 비전 전사는 ~30%(154배치·계정과목별5+Audit Innovation 완성, 나머지 배치 디스크 보존)까지만 — **잔여는 선택적 Haiku(~1/10비용) 업그레이드**로 덱 단위 점진 교체(멱등). 산출 gitignore(대외비), 임베딩 별도.",
+                  "done": true
+                },
+                {
+                  "title": "**감사기준서 주제별 통합 매뉴얼**(`감사매뉴얼\\`, 2026-06-15, 커밋 1f9901c) — 교육매뉴얼·실무지침을 **감사기준서(ISA) 정합 7그룹**으로 문서 단위 라우팅(메타 기반, **LLM 0**)해 통합. `build_audit_manual.py`: `KAS_GROUP`(기준서번호→그룹) 단일 테이블 + 기준해설 relStds·교육 phase·실무지침 topic → 그룹. **7그룹**(01 일반·윤리·품질 / 02 계획·위험평가·내부통제 / 03 감사증거·실증절차 / 04 특수영역·회계이슈 / 05 그룹감사·전문가 / 06 완료·의견·보고 / 07 내부회계ICFR). 각 그룹 `_index.md` 허브가 **규범(기준서)·해설(기준해설 relStds 역색인)·절차(실무지침)·사례·이해(교육)** 를 한 주제로 묶고 기준서/기준해설 교차링크. **산출 169 MD**(문서 162=교육125+실무지침37 +_index 7), 고객명0. 구 교육매뉴얼(7단계) 대체, 교육자료·실무지침·기준해설·기준서 원본 보존. 임베딩 시 화이트리스트=감사매뉴얼+기준서+기준해설+감리사례로 중복인덱싱 방지",
+                  "done": true
+                },
+                {
+                  "title": "스캔본 비전 전사 보류 — 신외부감사법 가이드북(금감원 219p, 외감법 법규로 이미 커버) + IT Audit 교육덱 2건. 비용 큼, 임베딩 단계와 함께 결정",
+                  "done": false
+                },
+                {
+                  "title": "표준회계감사조서 — **임베딩 취소(2026-06-12 사용자 결정)**: 사용자가 직접 자료 올리면 재실행. 변환기(convert_workpapers.py)·조서↔기준서 매핑 추출은 보존, 3800A·B·C 고객 실데이터 git 격리(6d57b88)는 유지. 아키텍처 재검토: 조서양식은 RAG 검색이 아니라 조서별 지식팩(Phase D)으로 가는 방향",
+                  "done": false
+                }
+              ],
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "세법 (하이브리드 확정: 찾기=RAG, 현행 확정=korean-law-mcp 조회)",
+              "done": false,
+              "checklist": [
+                {
+                  "title": "법령 (law.go.kr 핵심 6법×법·령·규칙 18종 3,026조문 — 국기·법인세·소득세·부가세·조특법·상증세법, 시행일 메타+월간 개정 감지 편입, 2026-06-12)",
+                  "done": true
+                },
+                {
+                  "title": "실무해석 — 기재부 유권해석 2,301건 전수 + **국세청 현대 예규 18,923건**(권위 선별: 사전·기준·명명된 과만, 상담·레거시 11.6만 제외 / 요지 근사중복 1,061 제거). law.go.kr 목록+taxlaw 본문, index-1781418277(102,516청크, 2026-06-13). 점검으로 자동 현행필터 불가 확정(실효플래그 없음·조문대조 16%) → 권위+시점 계층컷 채택, 현행 확정은 조회MCP. 국세청 보류분(레거시·상담)은 `--tier`로 소급 가능",
+                  "done": true
+                },
+                {
+                  "title": "**배치1: 국세청 서면질의(서면-YYYY) 신규 탑재** (2026-06-17, index-1781662221, 145,266청크). authority_tier() 분류 빈틈 수정(접두 \"서면\"만 잡아 legacy로 새던 현대 서면질의를 `서면-\\d{4}` 패턴으로 modern 승격) → 신규 9,225건 순증(저장 11,206 − dedup 1,838). 게이트 회귀 0(기본 0.845→0.88·audit→0.913 개선, tax 0.333 유지).",
+                  "done": true
+                },
+                {
+                  "title": "배치2~4(선택): 상담 low 2005~(1.65만)·legacy 최신순 — 비구속 주의문 부착. ~1999 구법(≈6.4만)은 검색 오염 위험 커 보류 유지 권장. 남은 보류 합계 ≈10.6만",
+                  "done": false
+                },
+                {
+                  "title": "korean-law-mcp 로컬 등록 (.mcp.json `korean-law`, npx v4.4.1, OC=wogus3575 — 조회 도구 9종, 차기 세션부터 사용)",
+                  "done": true
+                }
+              ],
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "업무 Template 만들기",
+          "descr": "감사조서·DCF 평가 모델 등 업무별 산출물 템플릿 표준화",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "회계감사 Template (상장·비상장)",
+              "done": false,
+              "checklist": [
+                {
+                  "title": "한공회 표준 감사조서 기반 Template 완성(IFRS, K-GAAP)",
+                  "done": false
+                },
+                {
+                  "title": "계정별 감사조서 Template 완성",
+                  "done": false
+                }
+              ],
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "정산표 Template (별도·연결)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "DCF 평가 모델 Template",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "엑셀 스킬 고도화",
+          "descr": "실제 조서 작성을 위한 업무별 엑셀 스킬 구축 — 기본 테마·규칙 고도화 + 클로드 애드인 연동",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "엑셀",
+              "done": false,
+              "checklist": [
+                {
+                  "title": "기본 테마 스킬 세팅 + 커스텀 스킬 등록",
+                  "done": false
+                },
+                {
+                  "title": "업무영역별 스킬 세팅(Template, MCP 연동)",
+                  "done": false
+                },
+                {
+                  "title": "감사조서 작성",
+                  "done": false
+                },
+                {
+                  "title": "현금흐름표 작성",
+                  "done": false
+                },
+                {
+                  "title": "DCF 평가 조서 작성",
+                  "done": false
+                }
+              ],
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "워드, PPT",
+              "done": false,
+              "checklist": [
+                {
+                  "title": "기본 테마 스킬 세팅",
+                  "done": false
+                }
+              ],
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "RPA 도구 개발",
+          "descr": "제안서 PPT·보고서 워드 등 문서 산출물 작성 자동화 스킬 + 템플릿",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "Word 보고서 템플릿 세팅",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "PPT 제안서/보고서 템플릿 세팅",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "슬라이드 자동화 스킬 연동",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "업무 프로세스 문서화",
+          "descr": "감사 절차 순서·조서 작성 방법론·검토 체크리스트 등 절차 지식 문서화 — 업무별 에이전트의 품질 기반",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "회계감사 프로세스 (수임→계획→중간감사→기말감사→아카이빙 절차, 계정별 감사 접근법)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "조서 작성 방법론 (조서 구조, 인용·tickmark 규칙, 검토 포인트)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "내부회계 검토 프로세스 (설계·운영 평가 절차)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "결산 프로세스 (정산표·명세서·주석 작성 순서)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "평가(Valuation) 프로세스 (DCF 수행 절차, 가정 설정 기준)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "검토 체크리스트 (산출물별 셀프리뷰 기준)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "감사 인게이지먼트 관리 툴",
+          "descr": "엔게이지먼트 폴더(단계별 하위 폴더) 안의 엑셀 조서·PBC 수증자료를 추적하는 관리 툴 — 폴더 규약 + 인덱스 + 대시보드 + MCP 연동",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "폴더 규약 표준화 (Audit_흥구석유 구조 기반 문서화)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "파일 인덱서 (폴더 스캔 → 메타데이터 JSON)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "PBC 요청·수증 추적 (요청 리스트 ↔ 수증 파일 매칭)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "대시보드 HTML (칸반 + 진행률)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "MCP 도구화 (조회·상태 갱신)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "파일럿: Audit_흥구석유 적용",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "오케스트레이션 에이전트 (Hermes)",
+          "descr": "전체 워크플로우를 지휘하는 오케스트레이션 에이전트 (Hermes) — 하네스/루프 엔지니어링의 중심",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "Hermes 세팅(허브 CLAUDE.md 지휘 규칙 + 오케스트레이션 기본 골격)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "하네스 엔지니어링 구현 (서브에이전트 정의·워크플로우)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "루프 엔지니어링 구현 (cron·/loop 기반 반복 작업)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "하위 업무 에이전트 연결",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "업무별 에이전트 구축",
+          "descr": "회계감사·내부회계·결산·평가 등 업무별 전문 에이전트 구축",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "회계감사 에이전트",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "내부회계 용역 에이전트",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "결산 용역 에이전트",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "평가(Valuation) 에이전트",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "공통: 페르소나·스킬·MCP 세팅 표준화",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "공통: 출력 검증 시나리오 (에이전트별 대표 과제 + 기대 산출물 기준으로 품질 검증)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "통합 Hook",
+          "descr": "작업 이벤트 감지·스케줄링·외부 시스템 연동을 담당하는 Hook 계층",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "작업 시작/완료/에러 시점의 이벤트 가로채기",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "cron 스케줄러: 주기적 업무 실행",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "외부 레거시 시스템 연동 및 API 알림 발송",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "해야할 것들 (볼트 이관)",
+          "descr": "옵시디언 Inbox에서 이관된 태스크 메모",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "조세통람 강의 — 강의 기획 및 강사정보 보내주기",
+              "done": true
+            },
+            {
+              "title": "한공회 커뮤니티 — 디스코드 세팅",
+              "done": true
+            },
+            {
+              "title": "한공회 커뮤니티 — 디스코드 매뉴얼 만들기",
+              "done": true
+            },
+            {
+              "title": "한공회 커뮤니티 — 결과 보고",
+              "done": true
+            },
+            {
+              "title": "한공회 커뮤니티 — 앞으로의 운영방향 고민해서 정리",
+              "done": false
+            },
+            {
+              "title": "한공회 커뮤니티 — 초기 콘텐츠 탑재",
+              "done": false
+            },
+            {
+              "title": "한공회 커뮤니티 — 베타테스터 모집",
+              "done": true
+            },
+            {
+              "title": "실무 AX 프로젝트 — 감사조서 템플릿 만들기",
+              "done": false
+            },
+            {
+              "title": "실무 AX 프로젝트 — 감사 프로그램 만들기",
+              "done": false
+            },
+            {
+              "title": "실무 AX 프로젝트 — 엑셀 스킬 깎기",
+              "done": true
+            },
+            {
+              "title": "실무 AX 프로젝트 — 워드 스킬 깎기",
+              "done": true
+            },
+            {
+              "title": "업무 — 삼보모터스 세팅",
+              "done": false
+            },
+            {
+              "title": "업무 — 흥구석유 세팅",
+              "done": false
+            },
+            {
+              "title": "회계 실무 사이트 만들기 — 회계 실무 사이트 만들기",
+              "done": false
+            },
+            {
+              "title": "나라장터 공고 제안서 자동화 시스템 만들기 — 나라장터 공고 수집 + 지원가능 판단 자동화",
+              "done": true
+            },
+            {
+              "title": "나라장터 공고 제안서 자동화 시스템 만들기 — 공고 내용 요약 자동화",
+              "done": true
+            },
+            {
+              "title": "나라장터 공고 제안서 자동화 시스템 만들기 — 제안서 및 구비서류 자동화",
+              "done": true
+            }
+          ]
+        },
+        {
+          "title": "Fable 로드맵 (볼트 이관)",
+          "descr": "Fable 프로젝트.md 실행 항목 — 원문은 볼트 Resource에 보존",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "기존 워크플로우, 앱 고도화 — PROTASK",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — CLICKTHUMB",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — 한공회 커뮤니티",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — PROCPA 리디자인",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — 명함 자동화",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — 의견서 작성 자동화",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — 나라장터 제안서 자동화",
+              "done": true
+            },
+            {
+              "title": "기존 워크플로우, 앱 고도화 — 옵시디언 리팩토링",
+              "done": false
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 사이트 제작하기",
+              "done": true
+            },
+            {
+              "title": "회계실무 사이트 만들기 — MCP 서버에서 원본 링크할 때 우리 사이트 링크하게 하기",
+              "done": true
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 실무해설/가이드 자동작성 시스템(하네스, 루프)",
+              "done": false
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 업무수임 CTA 연결하기",
+              "done": true
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 실무 자동화, AI활용 인사이트/가이드 추가하기",
+              "done": false
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 회계/재무 실무자들을 위한 다양한 도구 추가하기 -> 서비스 전환도 생각해보기",
+              "done": false
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 사이트에 우리 MCP 서버 활용한 챗봇 넣어보기(비용 따져보기)",
+              "done": false
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 수정해야할 것들",
+              "done": false
+            },
+            {
+              "title": "회계실무 사이트 만들기 — 도메인 확정하기",
+              "done": false
+            },
+            {
+              "title": "퍼스널브랜딩, 콘텐츠 자동화 — 콘텐츠 자동화",
+              "done": false
+            },
+            {
+              "title": "회계실무 AX 프로젝트 — 회계감사 가이드 정리",
+              "done": false
+            },
+            {
+              "title": "회계실무 AX 프로젝트 — 회계감사 조서 Template + 조서작성 자동화(스킬, MCP, 에이전트)",
+              "done": false
+            },
+            {
+              "title": "회계실무 AX 프로젝트 — 조서 관리 시스템 만들어보기(동기화, 버전관리)",
+              "done": false
+            },
+            {
+              "title": "회계실무 AX 프로젝트 — DCF Template + 템플릿작성 자동화",
+              "done": false
+            },
+            {
+              "title": "회계실무 AX 프로젝트 — SaaS업체 클론 코딩",
+              "done": false
+            },
+            {
+              "title": "회계실무 AX 프로젝트 — 기장 자동화",
+              "done": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "content-automation",
+      "name": "콘텐츠 자동화",
+      "projects": [
+        {
+          "title": "글 작성 자동화",
+          "descr": "글감·자료 입력만으로 글 작성→이미지→썸네일→배포까지 끝나는 원천 콘텐츠 파이프라인 (일부 구현됨, 고도화 단계)",
+          "status": "active",
+          "tasks": [
+            {
+              "title": "글감·자료 입력 → 글 자동 작성 (Rule·스킬 적용)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "글에 어울리는 본문 이미지 자동 생성",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "썸네일 자동 생성 — 대표 이미지 + 제목·부제목 (clickthumb.procpa.co.kr 활용)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "네이버블로그·개인웹사이트 배포 자동화",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "시리즈 작성 자동화",
+          "descr": "내부회계관리제도 실무서·연결회계 실무서 등 긴 호흡의 시리즈(실무서) 집필 자동화",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "시리즈 기획 자동화 (주제 → 목차·챕터 구조 설계)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "챕터별 집필 자동화 (Rule·스킬 적용, 용어·톤 일관성 유지)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "챕터 간 상호참조·일관성 검수 자동화",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "내부회계관리제도 실무서 (파일럿)",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            },
+            {
+              "title": "연결회계 실무서",
+              "done": false,
+              "labels": [
+                "P1"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "콘텐츠 변환 자동화",
+          "descr": "작성된 글을 슬라이드·카드뉴스·동영상(Remotion)으로 변환하는 멀티포맷 파이프라인",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "슬라이드 변환 자동화",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "카드뉴스 변환 자동화",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "동영상 변환 자동화 (Remotion 활용)",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "SNS 배포 자동화",
+          "descr": "글·변환 콘텐츠를 링크드인·스레드 등 SNS 채널에 자동 업로드",
+          "status": "hold",
+          "tasks": [
+            {
+              "title": "링크드인 업로드 자동화",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "스레드 업로드 자동화",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            },
+            {
+              "title": "채널별 포맷·톤 변환 규칙 정의",
+              "done": false,
+              "labels": [
+                "P2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
